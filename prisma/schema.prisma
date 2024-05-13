@@ -19,3 +19,12 @@ model Jabatan {
   created_at   DateTime @default(now())
   update_at    DateTime @updatedAt
 }
+
+model Employee {
+  id Int @id @unique @default(autoincrement())
+  name String
+  email String
+  password String
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
