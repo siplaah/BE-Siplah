@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from 'src/prisma.service';
-import { hashSync } from '@node-rs/bcrypt';
+import { hashSync, verifySync } from '@node-rs/bcrypt';
 
 @Injectable()
 export class EmployeeService {
@@ -27,13 +27,13 @@ export class EmployeeService {
         },
       });
 
-      return { message: 'Data employee berhasil ditambahkan', data: employee };
+      return { message: 'Data karyawan berhasil ditambahkan', data: employee };
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error; // Langsung lempar kesalahan BadRequestException
       }
       throw new BadRequestException(
-        `Gagal menambahkan data employee: ${error.message}`,
+        `Gagal menambahkan data karyawan: ${error.message}`,
       );
     }
   }
@@ -49,7 +49,7 @@ export class EmployeeService {
           id,
         },
       });
-      if (!data) throw new BadRequestException('User not found');
+      if (!data) throw new BadRequestException('Data karyawan tidak ditemukan');
       return data;
     } catch (error) {
       throw error;
@@ -58,13 +58,13 @@ export class EmployeeService {
 
   async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
     try {
-      const user = await this.prismaService.employee.findUnique({
+      const employee = await this.prismaService.employee.findUnique({
         where: {
           id,
         },
       });
 
-      if (!user) throw new Error('User not found');
+      if (!employee) throw new Error('Data karyawan tidak ditemukan');
 
       const updated = await this.prismaService.employee.update({
         where: {
@@ -76,21 +76,21 @@ export class EmployeeService {
           password: updateEmployeeDto.password,
         },
       });
-      return { message: 'Data employee berhasil diedit', data: updated };
+      return { message: 'Data karyawan berhasil diedit', data: updated };
     } catch (error) {
-      throw new BadRequestException('Gagal mengedit data employee');
+      throw new BadRequestException('Gagal mengedit data karyawan');
     }
   }
 
   async remove(id: number) {
     try {
-      const user = await this.prismaService.employee.findUnique({
+      const employee = await this.prismaService.employee.findUnique({
         where: {
           id,
         },
       });
 
-      if (!user) throw new Error('User not found');
+      if (!employee) throw new Error('Data karyawan tidak ditemukan');
 
       await this.prismaService.employee.delete({
         where: {
@@ -98,9 +98,34 @@ export class EmployeeService {
         },
       });
 
-      return { message: 'Data employee berhasil dihapus', data: null };
+      return { message: 'Data karyawan berhasil dihapus', data: null };
     } catch (error) {
-      throw new BadRequestException('Gagal menghapus data employee');
+      throw new BadRequestException('Gagal menghapus data karyawan');
+    }
+  }
+
+  async getOneByEmail(email: string) {
+    try {
+      const data = await this.prismaService.employee.findFirst({
+        where: {
+          email,
+        },
+      });
+      if (!data) throw new Error('Data karyawan tidak ditemukan');
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async verifyPassword(email: string, password: string) {
+    try {
+      const data = await this.getOneByEmail(email);
+      const passwordMatch = verifySync(password, data.password);
+      if (!passwordMatch) throw new Error('Wrong password');
+      return data;
+    } catch (error) {
+      throw error;
     }
   }
 }
