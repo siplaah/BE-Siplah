@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { JabatanService } from './jabatan.service';
 import { CreateJabatanDto } from './dto/create-jabatan.dto';
 import { UpdateJabatanDto } from './dto/update-jabatan.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { ResponseEntity } from 'src/common/entity/response.entity';
 
+@UseGuards(AuthGuard)
 @Controller('jabatan')
 export class JabatanController {
   constructor(private readonly jabatanService: JabatanService) {}
