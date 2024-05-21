@@ -16,7 +16,7 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ResponseEntity } from 'src/common/entity/response.entity';
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @Controller('employee')
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
@@ -50,20 +50,27 @@ export class EmployeeController {
     }
   }
 
+  // @Patch(':id')
+  // async update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto,
+  // ) {
+  //   try {
+  //     return new ResponseEntity(
+  //       await this.employeeService.update(+id, updateEmployeeDto),
+  //     );
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+
   @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateEmployeeDto: UpdateEmployeeDto,
-  ) {
+  async update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
     try {
-      return new ResponseEntity(
-        await this.employeeService.update(+id, updateEmployeeDto),
-      );
+      const result = await this.employeeService.update(+id, updateEmployeeDto);
+      return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {

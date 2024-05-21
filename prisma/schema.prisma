@@ -21,10 +21,30 @@ model Jabatan {
 }
 
 model Employee {
-  id Int @id @unique @default(autoincrement())
-  name String
-  email String
-  password String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  id            Int        @id @unique @default(autoincrement())
+  name          String
+  email         String
+  password      String
+  alamat        String
+  pendidikan    Pendidikan
+  tanggal_lahir DateTime
+  tempat_lahir  String
+  keterangan    Keterangan
+  createAt      DateTime   @default(now())
+  updateAt      DateTime   @updatedAt
+}
+
+enum Pendidikan {
+  SMA
+  D3
+  S1
+  S2
+  S3
+}
+
+enum Keterangan {
+  Karyawan
+  Freelance
+  Partime
+  Probation
 }

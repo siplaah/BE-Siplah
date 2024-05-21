@@ -3,15 +3,16 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from 'src/prisma.service';
 import { hashSync, verifySync } from '@node-rs/bcrypt';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class EmployeeService {
-  constructor(private readonly prismaService: PrismaService) {}
-  async create(data: CreateEmployeeDto) {
+  constructor(private prisma: PrismaService) {}
+  async create(createEmployee: Prisma.EmployeeCreateInput) {
     try {
-      const exist = await this.prismaService.employee.findFirst({
+      const exist = await this.prisma.employee.findFirst({
         where: {
-          email: data.email,
+          email: createEmployee.email,
         },
       });
 
@@ -19,11 +20,16 @@ export class EmployeeService {
         throw new BadRequestException('Email sudah terdaftar');
       }
 
-      const employee = await this.prismaService.employee.create({
+      const employee = await this.prisma.employee.create({
         data: {
-          name: data.name,
-          email: data.email,
-          password: hashSync(data.password),
+          name: createEmployee.name,
+          email: createEmployee.email,
+          password: createEmployee.password,
+          alamat: createEmployee.alamat,
+          pendidikan: createEmployee.pendidikan,
+          tanggal_lahir: createEmployee.tanggal_lahir,
+          tempat_lahir: createEmployee.tempat_lahir,
+          keterangan: createEmployee.keterangan,
         },
       });
 
@@ -39,12 +45,12 @@ export class EmployeeService {
   }
 
   async findAll() {
-    return await this.prismaService.employee.findMany();
+    return await this.prisma.employee.findMany();
   }
 
   async findOne(id: number) {
     try {
-      const data = await this.prismaService.employee.findUnique({
+      const data = await this.prisma.employee.findUnique({
         where: {
           id,
         },
@@ -58,7 +64,7 @@ export class EmployeeService {
 
   async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
     try {
-      const employee = await this.prismaService.employee.findUnique({
+      const employee = await this.prisma.employee.findUnique({
         where: {
           id,
         },
@@ -66,7 +72,7 @@ export class EmployeeService {
 
       if (!employee) throw new Error('Data karyawan tidak ditemukan');
 
-      const updated = await this.prismaService.employee.update({
+      const updated = await this.prisma.employee.update({
         where: {
           id,
         },
@@ -74,6 +80,11 @@ export class EmployeeService {
           name: updateEmployeeDto.name,
           email: updateEmployeeDto.email,
           password: updateEmployeeDto.password,
+          alamat: updateEmployeeDto.alamat,
+          pendidikan: updateEmployeeDto.pendidikan,
+          tanggal_lahir: updateEmployeeDto.tanggal_lahir,
+          tempat_lahir: updateEmployeeDto.tempat_lahir,
+          keterangan: updateEmployeeDto.keterangan
         },
       });
       return { message: 'Data karyawan berhasil diedit', data: updated };
@@ -84,7 +95,7 @@ export class EmployeeService {
 
   async remove(id: number) {
     try {
-      const employee = await this.prismaService.employee.findUnique({
+      const employee = await this.prisma.employee.findUnique({
         where: {
           id,
         },
@@ -92,7 +103,7 @@ export class EmployeeService {
 
       if (!employee) throw new Error('Data karyawan tidak ditemukan');
 
-      await this.prismaService.employee.delete({
+      await this.prisma.employee.delete({
         where: {
           id,
         },
@@ -106,7 +117,7 @@ export class EmployeeService {
 
   async getOneByEmail(email: string) {
     try {
-      const data = await this.prismaService.employee.findFirst({
+      const data = await this.prisma.employee.findFirst({
         where: {
           email,
         },
