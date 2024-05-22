@@ -18,7 +18,7 @@ export class AuthService {
       );
       const accessToken = await this.jwtService.sign({
         employee: {
-          id: employee.id,
+          id: employee.id_employee,
           name: employee.name,
           email: employee.email,
         },
@@ -26,7 +26,7 @@ export class AuthService {
       return {
         accessToken,
         employee: {
-          id: employee.id,
+          id: employee.id_employee,
           name: employee.name,
           email: employee.email,
         },

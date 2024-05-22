@@ -14,14 +14,15 @@ datasource db {
 }
 
 model Jabatan {
-  id_jabatan   Int      @id @default(autoincrement())
+  id_jabatan   Int        @id @default(autoincrement())
   name_jabatan String
-  created_at   DateTime @default(now())
-  update_at    DateTime @updatedAt
+  created_at   DateTime   @default(now())
+  update_at    DateTime   @updatedAt
+  Employee     Employee[]
 }
 
 model Employee {
-  id            Int        @id @unique @default(autoincrement())
+  id_employee   Int        @id @unique @default(autoincrement())
   name          String
   email         String
   password      String
@@ -32,6 +33,9 @@ model Employee {
   keterangan    Keterangan
   createAt      DateTime   @default(now())
   updateAt      DateTime   @updatedAt
+  id_jabatan    Int?
+  jabatan       Jabatan?   @relation(fields: [id_jabatan], references: [id_jabatan])
+  Project       Project[]
 }
 
 enum Pendidikan {
@@ -47,4 +51,13 @@ enum Keterangan {
   Freelance
   Partime
   Probation
+}
+
+model Project {
+  id_project   Int       @id @default(autoincrement())
+  name_project String
+  created_at   DateTime  @default(now())
+  update_at    DateTime  @updatedAt
+  id_employee  Int
+  employee     Employee? @relation(fields: [id_employee], references: [id_employee])
 }
