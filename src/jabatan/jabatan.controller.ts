@@ -5,7 +5,7 @@ import { UpdateJabatanDto } from './dto/update-jabatan.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ResponseEntity } from 'src/common/entity/response.entity';
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @Controller('jabatan')
 export class JabatanController {
   constructor(private readonly jabatanService: JabatanService) {}

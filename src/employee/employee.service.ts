@@ -20,17 +20,21 @@ export class EmployeeService {
         throw new BadRequestException('Email sudah terdaftar');
       }
 
+      // const employee = await this.prisma.employee.create({
+      //   data: {
+      //     id_jabatan: createEmployee.jabatan,
+      //     name: createEmployee.name,
+      //     email: createEmployee.email,
+      //     password: createEmployee.password,
+      //     alamat: createEmployee.alamat,
+      //     pendidikan: createEmployee.pendidikan,
+      //     tanggal_lahir: createEmployee.tanggal_lahir,
+      //     tempat_lahir: createEmployee.tempat_lahir,
+      //     keterangan: createEmployee.keterangan,
+      //   },
+      // });
       const employee = await this.prisma.employee.create({
-        data: {
-          name: createEmployee.name,
-          email: createEmployee.email,
-          password: createEmployee.password,
-          alamat: createEmployee.alamat,
-          pendidikan: createEmployee.pendidikan,
-          tanggal_lahir: createEmployee.tanggal_lahir,
-          tempat_lahir: createEmployee.tempat_lahir,
-          keterangan: createEmployee.keterangan,
-        },
+        data: createEmployee,
       });
 
       return { message: 'Data karyawan berhasil ditambahkan', data: employee };
@@ -48,44 +52,26 @@ export class EmployeeService {
     return await this.prisma.employee.findMany();
   }
 
-  async findOne(id: number) {
-    try {
-      const data = await this.prisma.employee.findUnique({
-        where: {
-          id,
-        },
-      });
-      if (!data) throw new BadRequestException('Data karyawan tidak ditemukan');
-      return data;
-    } catch (error) {
-      throw error;
+  async findOne(getEmployeebyid: Prisma.EmployeeWhereUniqueInput) {
+    const employee=await this.prisma.employee.findUnique({
+      where: getEmployeebyid,
+    });
+    if(!employee){
+      throw new BadRequestException ('data tidak ditemukan');
     }
+    return employee;
   }
 
-  async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
+  async update(where: Prisma.EmployeeWhereUniqueInput, data: Prisma.EmployeeUpdateInput) {
     try {
       const employee = await this.prisma.employee.findUnique({
-        where: {
-          id,
-        },
+        where,
       });
 
       if (!employee) throw new Error('Data karyawan tidak ditemukan');
 
       const updated = await this.prisma.employee.update({
-        where: {
-          id,
-        },
-        data: {
-          name: updateEmployeeDto.name,
-          email: updateEmployeeDto.email,
-          password: updateEmployeeDto.password,
-          alamat: updateEmployeeDto.alamat,
-          pendidikan: updateEmployeeDto.pendidikan,
-          tanggal_lahir: updateEmployeeDto.tanggal_lahir,
-          tempat_lahir: updateEmployeeDto.tempat_lahir,
-          keterangan: updateEmployeeDto.keterangan
-        },
+        where, data
       });
       return { message: 'Data karyawan berhasil diedit', data: updated };
     } catch (error) {
@@ -97,7 +83,7 @@ export class EmployeeService {
     try {
       const employee = await this.prisma.employee.findUnique({
         where: {
-          id,
+          id_employee: id
         },
       });
 
@@ -105,7 +91,7 @@ export class EmployeeService {
 
       await this.prisma.employee.delete({
         where: {
-          id,
+          id_employee:id,
         },
       });
 

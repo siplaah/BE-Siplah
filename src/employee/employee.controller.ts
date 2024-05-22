@@ -44,7 +44,7 @@ export class EmployeeController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     try {
-      return new ResponseEntity(await this.employeeService.findOne(+id));
+      return new ResponseEntity(await this.employeeService.findOne({id_employee: +id}));
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -65,7 +65,7 @@ export class EmployeeController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
     try {
-      const result = await this.employeeService.update(+id, updateEmployeeDto);
+      const result = await this.employeeService.update({id_employee:+id}, updateEmployeeDto);
       return result;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
