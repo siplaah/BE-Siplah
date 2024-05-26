@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateEmployeeDto } from './dto/create-employee.dto';
-import { UpdateEmployeeDto } from './dto/update-employee.dto';
+// import { CreateEmployeeDto } from './dto/create-employee.dto';
+// import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from 'src/prisma.service';
 import { hashSync, verifySync } from '@node-rs/bcrypt';
 import { Prisma } from '@prisma/client';
@@ -10,6 +10,9 @@ export class EmployeeService {
   constructor(private prisma: PrismaService) {}
   async create(createEmployee: Prisma.EmployeeCreateInput) {
     try {
+      const hashedPassword = hashSync(createEmployee.password, 10);
+      const employeeData = { ...createEmployee, password: hashedPassword };
+
       const exist = await this.prisma.employee.findFirst({
         where: {
           email: createEmployee.email,
@@ -34,7 +37,7 @@ export class EmployeeService {
       //   },
       // });
       const employee = await this.prisma.employee.create({
-        data: createEmployee,
+        data: employeeData,
       });
 
       return { message: 'Data karyawan berhasil ditambahkan', data: employee };
@@ -53,16 +56,19 @@ export class EmployeeService {
   }
 
   async findOne(getEmployeebyid: Prisma.EmployeeWhereUniqueInput) {
-    const employee=await this.prisma.employee.findUnique({
+    const employee = await this.prisma.employee.findUnique({
       where: getEmployeebyid,
     });
-    if(!employee){
-      throw new BadRequestException ('data tidak ditemukan');
+    if (!employee) {
+      throw new BadRequestException('data tidak ditemukan');
     }
     return employee;
   }
 
-  async update(where: Prisma.EmployeeWhereUniqueInput, data: Prisma.EmployeeUpdateInput) {
+  async update(
+    where: Prisma.EmployeeWhereUniqueInput,
+    data: Prisma.EmployeeUpdateInput,
+  ) {
     try {
       const employee = await this.prisma.employee.findUnique({
         where,
@@ -71,7 +77,8 @@ export class EmployeeService {
       if (!employee) throw new Error('Data karyawan tidak ditemukan');
 
       const updated = await this.prisma.employee.update({
-        where, data
+        where,
+        data,
       });
       return { message: 'Data karyawan berhasil diedit', data: updated };
     } catch (error) {
@@ -83,7 +90,7 @@ export class EmployeeService {
     try {
       const employee = await this.prisma.employee.findUnique({
         where: {
-          id_employee: id
+          id_employee: id,
         },
       });
 
@@ -91,7 +98,7 @@ export class EmployeeService {
 
       await this.prisma.employee.delete({
         where: {
-          id_employee:id,
+          id_employee: id,
         },
       });
 
