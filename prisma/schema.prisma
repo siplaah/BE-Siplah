@@ -61,3 +61,11 @@ model Project {
   id_employee  Int
   employee     Employee? @relation(fields: [id_employee], references: [id_employee])
 }
+
+model KeyResult {
+  id_key_result Int @id @default(autoincrement())
+  key_result    String
+  target        Int
+  created_at    DateTime  @default(now())
+  update_at     DateTime  @updatedAt
+}
