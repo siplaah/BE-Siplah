@@ -14,16 +14,15 @@ export class CreateEmployeeDto {
   @IsString()
   alamat: string;
 
-  @IsEnum(Pendidikan , {message: 'Pendidikan tidak valid'})
+  @IsEnum(Pendidikan, { message: 'Pendidikan tidak valid' })
   pendidikan: Pendidikan;
 
   @IsDate()
   tanggal_lahir: Date;
-  
+
   @IsString()
   tempat_lahir: string;
 
-  @IsEnum(Keterangan, {message: 'Keterangan tidak valid'})
-  keterangan: Keterangan
-
+  @IsEnum(Keterangan, { message: 'Keterangan tidak valid' })
+  keterangan: Keterangan;
 }

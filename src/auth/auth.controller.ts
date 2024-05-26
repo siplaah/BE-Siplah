@@ -28,6 +28,20 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
+  @Post('logout')
+  public async logout(
+    @Req() req: Request & { headers: { authorization: string } },
+  ) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      await this.authService.logout(token);
+      return new ResponseEntity({ message: 'Logged out successfully' });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @UseGuards(AuthGuard)
   @Get('me')
   public async me(@Req() req: Request & { employee: JwtPayload }) {
     return req.employee;
