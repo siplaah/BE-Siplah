@@ -5,9 +5,10 @@ import { JabatanModule } from './jabatan/jabatan.module';
 import { EmployeeModule } from './employee/employee.module';
 import { AuthModule } from './auth/auth.module';
 import { ProjectModule } from './project/project.module';
+import { KeyResultModule } from './key_result/key_result.module';
 
 @Module({
-  imports: [JabatanModule, EmployeeModule, AuthModule, ProjectModule],
+  imports: [JabatanModule, EmployeeModule, AuthModule, ProjectModule, KeyResultModule],
   controllers: [AppController],
   providers: [AppService],
 })
