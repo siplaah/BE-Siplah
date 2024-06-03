@@ -63,27 +63,40 @@ model Project {
 }
 
 model KeyResult {
-  id_key_result Int @id @default(autoincrement())
+  id_key_result Int      @id @default(autoincrement())
   key_result    String
   target        Int
-  created_at    DateTime  @default(now())
-  update_at     DateTime  @updatedAt
+  created_at    DateTime @default(now())
+  update_at     DateTime @updatedAt
 }
 
 model Overtimes {
-  id_overtime Int @id @default(autoincrement())
+  id_overtime Int      @id @default(autoincrement())
   start_date  DateTime
   end_date    DateTime
   start_time  DateTime
   end_time    DateTime
   attachment  String
   status      Status
-  created_at    DateTime  @default(now())
-  update_at     DateTime  @updatedAt
+  created_at  DateTime @default(now())
+  update_at   DateTime @updatedAt
 }
 
 enum Status {
   pending
   approved
   rejected
+}
+
+model DailyReport {
+  id_daily_report Int     @id @default(autoincrement())
+  task            String
+  status          Progres
+  link            String
+}
+
+enum Progres {
+  Done
+  OnGoing
+  Pending
 }
