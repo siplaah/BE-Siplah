@@ -50,17 +50,6 @@ export class EmployeeController {
     }
   }
 
-  // @Patch(':id')
-  // async update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto,
-  // ) {
-  //   try {
-  //     return new ResponseEntity(
-  //       await this.employeeService.update(+id, updateEmployeeDto),
-  //     );
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
@@ -71,6 +60,7 @@ export class EmployeeController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
   @Delete(':id')
   async remove(@Param('id') id: string) {
     try {

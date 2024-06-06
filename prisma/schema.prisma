@@ -22,7 +22,7 @@ model Jabatan {
 }
 
 model Employee {
-  id_employee   Int        @id @unique @default(autoincrement())
+  id_employee   Int           @id @unique @default(autoincrement())
   name          String
   email         String
   password      String
@@ -31,11 +31,14 @@ model Employee {
   tanggal_lahir DateTime
   tempat_lahir  String
   keterangan    Keterangan
-  createAt      DateTime   @default(now())
-  updateAt      DateTime   @updatedAt
+  start_working DateTime
+  createAt      DateTime      @default(now())
+  updateAt      DateTime      @updatedAt
   id_jabatan    Int?
-  jabatan       Jabatan?   @relation(fields: [id_jabatan], references: [id_jabatan])
+  jabatan       Jabatan?      @relation(fields: [id_jabatan], references: [id_jabatan])
   Project       Project[]
+  DailyReport   DailyReport[]
+  Presensi      Presensi[]
 }
 
 enum Pendidikan {
@@ -60,6 +63,7 @@ model Project {
   update_at    DateTime  @updatedAt
   id_employee  Int
   employee     Employee? @relation(fields: [id_employee], references: [id_employee])
+  DailyReport DailyReport[]
 }
 
 model KeyResult {
@@ -89,14 +93,28 @@ enum Status {
 }
 
 model DailyReport {
-  id_daily_report Int     @id @default(autoincrement())
+  id_daily_report Int       @id @default(autoincrement())
+  id_employee     Int
+  employee        Employee? @relation(fields: [id_employee], references: [id_employee])
+  date            DateTime
   task            String
   status          Progres
   link            String
+  id_project    Int?
+  project       Project?      @relation(fields: [id_project], references: [id_project])
 }
 
 enum Progres {
   Done
   OnGoing
   Pending
+}
+
+model Presensi {
+  id_presensi Int       @id @default(autoincrement())
+  id_employee Int
+  employee    Employee? @relation(fields: [id_employee], references: [id_employee])
+  date        DateTime
+  start_time  DateTime
+  end_time    DateTime
 }

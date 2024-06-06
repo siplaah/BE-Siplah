@@ -8,9 +8,10 @@ import { ProjectModule } from './project/project.module';
 import { KeyResultModule } from './key_result/key_result.module';
 import { OvertimeModule } from './overtime/overtime.module';
 import { DailyReportModule } from './daily_report/daily_report.module';
+import { PresensiModule } from './presensi/presensi.module';
 
 @Module({
-  imports: [JabatanModule, EmployeeModule, AuthModule, ProjectModule, KeyResultModule, OvertimeModule, DailyReportModule],
+  imports: [JabatanModule, EmployeeModule, AuthModule, ProjectModule, KeyResultModule, OvertimeModule, DailyReportModule, PresensiModule],
   controllers: [AppController],
   providers: [AppService],
 })

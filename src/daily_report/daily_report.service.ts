@@ -7,17 +7,16 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class DailyReportService {
   constructor(private prisma: PrismaService) {}
-    async create(createDailyReport: Prisma.DailyReportCreateInput) {
-      try {
-        const tambahDailyReport = await this.prisma.dailyReport.create({
-          data: createDailyReport,
-        });
-        return tambahDailyReport;
-      } catch (error) {
-        throw new BadRequestException('Gagal Menambahkan Daily Report');
-      }
+  async create(createDailyReport: Prisma.DailyReportCreateInput) {
+    try {
+      const tambahDailyReport = await this.prisma.dailyReport.create({
+        data: createDailyReport,
+      });
+      return tambahDailyReport;
+    } catch (error) {
+      throw new BadRequestException('Gagal Menambahkan Daily Report');
     }
-  
+  }
 
   async findAll() {
     return await this.prisma.dailyReport.findMany();
@@ -25,13 +24,13 @@ export class DailyReportService {
 
   async findOne(getDailyReportbyId: Prisma.DailyReportWhereUniqueInput) {
     const getDailyReport = await this.prisma.dailyReport.findUnique({
-      where: getDailyReportbyId
+      where: getDailyReportbyId,
     });
-    
+
     if (!getDailyReport) {
       throw new BadRequestException('data tidak ditemukan');
     }
-    return getDailyReport
+    return getDailyReport;
   }
 
   async update(
