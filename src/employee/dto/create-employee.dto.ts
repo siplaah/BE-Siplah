@@ -23,6 +23,9 @@ export class CreateEmployeeDto {
   @IsString()
   tempat_lahir: string;
 
+  @IsString()
+  start_working: string;
+
   @IsEnum(Keterangan, { message: 'Keterangan tidak valid' })
   keterangan: Keterangan;
 }

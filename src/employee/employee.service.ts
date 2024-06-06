@@ -22,20 +22,7 @@ export class EmployeeService {
       if (exist) {
         throw new BadRequestException('Email sudah terdaftar');
       }
-
-      // const employee = await this.prisma.employee.create({
-      //   data: {
-      //     id_jabatan: createEmployee.jabatan,
-      //     name: createEmployee.name,
-      //     email: createEmployee.email,
-      //     password: createEmployee.password,
-      //     alamat: createEmployee.alamat,
-      //     pendidikan: createEmployee.pendidikan,
-      //     tanggal_lahir: createEmployee.tanggal_lahir,
-      //     tempat_lahir: createEmployee.tempat_lahir,
-      //     keterangan: createEmployee.keterangan,
-      //   },
-      // });
+      
       const employee = await this.prisma.employee.create({
         data: employeeData,
       });
