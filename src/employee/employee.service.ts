@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 // import { CreateEmployeeDto } from './dto/create-employee.dto';
 // import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -22,7 +26,7 @@ export class EmployeeService {
       if (exist) {
         throw new BadRequestException('Email sudah terdaftar');
       }
-      
+
       const employee = await this.prisma.employee.create({
         data: employeeData,
       });
@@ -118,5 +122,18 @@ export class EmployeeService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async getNamaJabatanById(id_jabatan: number): Promise<string> {
+    const jabatan = await this.prisma.jabatan.findUnique({
+      where: { id_jabatan: id_jabatan },
+      select: { name_jabatan: true },
+    });
+    if (!jabatan) {
+      throw new NotFoundException(
+        `Jabatan dengan ID ${id_jabatan} tidak ditemukan`,
+      );
+    }
+    return jabatan.name_jabatan;
   }
 }

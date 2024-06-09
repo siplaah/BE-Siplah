@@ -1,36 +1,38 @@
 import { Status } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsString, Matches } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateOvertimeDto {
-  @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{2}-\d{2}-\d{4}$/, {
-    message: 'format start_date harus DD-MM-YYYY',
-  })
+  @IsDateString()
   start_date: string;
 
-  @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{2}-\d{2}-\d{4}$/, {
-    message: 'format end_date harus DD-MM-YYYY',
-  })
+  @IsDateString()
   end_date: string;
 
-  @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{2}:\d{2}$/, { message: 'format start_time harus HH:MM' })
+  @IsDateString()
   start_time: string;
 
-  @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{2}:\d{2}$/, { message: 'format end_time harus HH:MM' })
+  @IsDateString()
   end_time: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   attachment: string;
 
   @IsNotEmpty()
   @IsEnum(Status, { message: 'Status tidak valid' })
   status: Status;
+
+  @IsOptional()
+  @IsString()
+  description: string;
 }

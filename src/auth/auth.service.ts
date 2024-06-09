@@ -19,11 +19,17 @@ export class AuthService {
         signInDto.email,
         signInDto.password,
       );
+
+      const namaJabatan = await this.employeeService.getNamaJabatanById(
+        employee.id_jabatan,
+      );
+
       const accessToken = this.jwtService.sign({
         employee: {
           id: employee.id_employee,
           name: employee.name,
           email: employee.email,
+          jabatan: namaJabatan,
         },
       });
       return {
@@ -32,6 +38,7 @@ export class AuthService {
           id: employee.id_employee,
           name: employee.name,
           email: employee.email,
+          jabatan: namaJabatan,
         },
       };
     } catch (error) {

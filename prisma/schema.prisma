@@ -39,6 +39,7 @@ model Employee {
   Project       Project[]
   DailyReport   DailyReport[]
   Presensi      Presensi[]
+  overtimes     Overtimes[]
 }
 
 enum Pendidikan {
@@ -75,15 +76,18 @@ model KeyResult {
 }
 
 model Overtimes {
-  id_overtime Int      @id @default(autoincrement())
+  id_overtime Int       @id @default(autoincrement())
+  id_employee Int
+  employee    Employee? @relation(fields: [id_employee], references: [id_employee])
   start_date  DateTime
   end_date    DateTime
   start_time  DateTime
   end_time    DateTime
   attachment  String
-  status      Status
-  created_at  DateTime @default(now())
-  update_at   DateTime @updatedAt
+  status      Status    @default(pending)
+  description String?
+  created_at  DateTime  @default(now())
+  update_at   DateTime  @updatedAt
 }
 
 enum Status {

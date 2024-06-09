@@ -1,24 +1,37 @@
+// src/overtime/overtime.controller.ts
 import {
   Controller,
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
-  Put,
+  UseGuards,
+  Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('overtime')
 export class OvertimeController {
-  constructor(private readonly overtimeService: OvertimeService) {}
+  constructor(
+    private readonly overtimeService: OvertimeService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post()
-  create(@Body() createOvertimeDto: CreateOvertimeDto) {
-    return this.overtimeService.create(createOvertimeDto);
+  async create(@Body() createOvertimeDto: CreateOvertimeDto, @Req() req) {
+    const id_employee = req.employee.id;
+    if (!id_employee) {
+      throw new BadRequestException('Employee ID is required');
+    }
+    return this.overtimeService.create(createOvertimeDto, id_employee);
   }
 
   @Get()
@@ -31,8 +44,8 @@ export class OvertimeController {
     return this.overtimeService.findOne({ id_overtime: +id });
   }
 
-  @Patch(':id')
-  update(
+  @Put(':id')
+  async update(
     @Param('id') id: string,
     @Body() updateOvertimeDto: UpdateOvertimeDto,
   ) {
@@ -40,7 +53,7 @@ export class OvertimeController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.overtimeService.remove(+id);
   }
 
@@ -50,7 +63,7 @@ export class OvertimeController {
   }
 
   @Put(':id/reject')
-  reject(@Param('id') id: string) {
-    return this.overtimeService.reject(+id);
+  reject(@Param('id') id: string, @Body('description') description: string) {
+    return this.overtimeService.reject(+id, description);
   }
 }
