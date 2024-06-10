@@ -11,10 +11,10 @@ export class TimeOffService {
   async create(createTimeOffDto: CreateTimeOffDto, id_employee: number) {
     try {
       const { start_date, end_date } = createTimeOffDto;
-      const totalDays = this.calculateTotalDays(start_date, end_date);
+      const total_hari = this.hitungTotalHari(start_date, end_date);
 
-      if (totalDays <= 0) {
-        throw new BadRequestException('Invalid time off duration');
+      if (total_hari <= 0) {
+        throw new BadRequestException('Durasi cuti tidak valid');
       }
 
       const tambahCuti = await this.prisma.timeOff.create({
@@ -46,7 +46,7 @@ export class TimeOffService {
 
   async findAll() {
     const allTimeOff = await this.prisma.timeOff.findMany();
-    const timeOffsWithCuti = await Promise.all(
+    const showTotalCuti = await Promise.all(
       allTimeOff.map(async (timeOff) => {
         const employee = await this.prisma.employee.findUnique({
           where: { id_employee: timeOff.id_employee },
@@ -58,7 +58,7 @@ export class TimeOffService {
         };
       }),
     );
-    return timeOffsWithCuti;
+    return showTotalCuti;
   }
 
   async findOne(getTimeOffbyId: Prisma.TimeOffWhereUniqueInput) {
@@ -103,11 +103,11 @@ export class TimeOffService {
       });
 
       if (updateTimeOffDto.status === Status.approved) {
-        const totalDays = this.calculateTotalDays(
+        const total_hari = this.hitungTotalHari(
           updateTimeOff.start_date.toISOString(),
           updateTimeOff.end_date.toISOString(),
         );
-        await this.jumlahCuti(updateTimeOff.id_employee, totalDays);
+        await this.jumlahCuti(updateTimeOff.id_employee, total_hari);
       }
 
       const employee = await this.prisma.employee.findUnique({
@@ -171,12 +171,12 @@ export class TimeOffService {
       data: { status: Status.approved },
     });
 
-    const totalDays = this.calculateTotalDays(
+    const total_hari = this.hitungTotalHari(
       approvedTimeOff.start_date.toISOString(),
       approvedTimeOff.end_date.toISOString(),
     );
 
-    await this.jumlahCuti(approvedTimeOff.id_employee, totalDays);
+    await this.jumlahCuti(approvedTimeOff.id_employee, total_hari);
 
     const employee = await this.prisma.employee.findUnique({
       where: { id_employee: approvedTimeOff.id_employee },
@@ -217,12 +217,12 @@ export class TimeOffService {
     });
   }
 
-  private calculateTotalDays(start_date: string, end_date: string): number {
+  private hitungTotalHari(start_date: string, end_date: string): number {
     const startDate = new Date(start_date);
     const endDate = new Date(end_date);
-    const timeDifference = endDate.getTime() - startDate.getTime();
-    const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24)); // Tambahkan 1 untuk menghitung kedua hari secara inklusif
-    return daysDifference;
+    const hitungWaktu = endDate.getTime() - startDate.getTime();
+    const hitungHari = Math.ceil(hitungWaktu / (1000 * 3600 * 24));
+    return hitungHari;
   }
 
   private async jumlahCuti(id_employee: number, days: number) {
@@ -236,7 +236,7 @@ export class TimeOffService {
         where: { id_employee },
         data: { cuti: { increment: days } },
       });
-      throw new BadRequestException('Insufficient leave count');
+      throw new BadRequestException('Jumlah cuti tidak mencukupi');
     }
 
     return employee;
