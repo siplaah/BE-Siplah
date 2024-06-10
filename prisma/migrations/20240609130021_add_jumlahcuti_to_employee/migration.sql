@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Employee" ADD COLUMN     "cuti" INTEGER NOT NULL DEFAULT 12;
