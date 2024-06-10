@@ -22,7 +22,7 @@ export class AuthGuard implements CanActivate {
       if (!payload) {
         return false; // Return false if payload not found
       }
-      console.log('Payload:', payload);
+      // console.log('Payload:', payload);
       request['employee'] = payload.employee;
       return true;
     } catch (error) {
@@ -47,7 +47,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const payload = await this.jwtService.verifyAsync(token);
-    console.log('Verified Token Payload:', payload); // Log verified token payload
+    // console.log('Verified Token Payload:', payload); // Log verified token payload
     return payload;
   }
 }

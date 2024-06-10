@@ -32,6 +32,7 @@ model Employee {
   tempat_lahir  String
   keterangan    Keterangan
   start_working DateTime
+  cuti          Int           @default(12)
   createAt      DateTime      @default(now())
   updateAt      DateTime      @updatedAt
   id_jabatan    Int?
@@ -40,6 +41,7 @@ model Employee {
   DailyReport   DailyReport[]
   Presensi      Presensi[]
   overtimes     Overtimes[]
+  time_off      TimeOff[]
 }
 
 enum Pendidikan {
@@ -121,4 +123,24 @@ model Presensi {
   date        DateTime
   start_time  DateTime
   end_time    DateTime
+}
+
+model TimeOff {
+  id_time_off Int       @id @default(autoincrement())
+  id_employee Int
+  employee    Employee? @relation(fields: [id_employee], references: [id_employee])
+  start_date  DateTime
+  end_date    DateTime
+  attachment  String
+  type        typeTimeOff    
+  status      Status    @default(pending)
+  description String?
+  created_at  DateTime  @default(now())
+  update_at   DateTime  @updatedAt
+}
+
+enum typeTimeOff {
+  tahunan
+  menikah
+  melahirkan
 }
