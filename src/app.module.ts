@@ -10,9 +10,10 @@ import { OvertimeModule } from './overtime/overtime.module';
 import { DailyReportModule } from './daily_report/daily_report.module';
 import { PresensiModule } from './presensi/presensi.module';
 import { TimeOffModule } from './time_off/time_off.module';
+import { MeetingModule } from './meeting/meeting.module';
 
 @Module({
-  imports: [JabatanModule, EmployeeModule, AuthModule, ProjectModule, KeyResultModule, OvertimeModule, DailyReportModule, PresensiModule, TimeOffModule],
+  imports: [JabatanModule, EmployeeModule, AuthModule, ProjectModule, KeyResultModule, OvertimeModule, DailyReportModule, PresensiModule, TimeOffModule, MeetingModule],
   controllers: [AppController],
   providers: [AppService],
 })
