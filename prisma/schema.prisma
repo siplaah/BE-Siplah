@@ -32,7 +32,7 @@ model Employee {
   tempat_lahir  String
   keterangan    Keterangan
   start_working DateTime
-  cuti          Int           @default(12)
+  cuti          Int?          @default(12)
   createAt      DateTime      @default(now())
   updateAt      DateTime      @updatedAt
   id_jabatan    Int?
