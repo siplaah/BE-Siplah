@@ -42,6 +42,7 @@ model Employee {
   Presensi      Presensi[]
   overtimes     Overtimes[]
   time_off      TimeOff[]
+  meeting       Meeting[]
 }
 
 enum Pendidikan {
@@ -143,4 +144,15 @@ enum typeTimeOff {
   tahunan
   menikah
   melahirkan
+}
+
+model Meeting {
+  id_meeting    Int     @id @default(autoincrement())
+  id_employee   Int
+  employee      Employee? @relation(fields: [id_employee], references: [id_employee])
+  date          DateTime
+  start_time    DateTime
+  end_time      DateTime
+  link_meeting  String
+  description   String
 }
