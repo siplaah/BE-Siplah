@@ -1,8 +1,9 @@
 import{Progres, Status} from '@prisma/client';
 import { IsEnum, IsString } from 'class-validator';
 export class CreateDailyReportDto {
-    
+    @IsString()
     date: string;
+    
     @IsString()
     task: string;
     

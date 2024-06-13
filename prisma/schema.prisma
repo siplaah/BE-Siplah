@@ -28,10 +28,10 @@ model Employee {
   password      String
   alamat        String
   pendidikan    Pendidikan
-  tanggal_lahir DateTime
+  tanggal_lahir String
   tempat_lahir  String
   keterangan    Keterangan
-  start_working DateTime
+  start_working String
   cuti          Int?          @default(12)
   createAt      DateTime      @default(now())
   updateAt      DateTime      @updatedAt
@@ -60,13 +60,13 @@ enum Keterangan {
 }
 
 model Project {
-  id_project   Int       @id @default(autoincrement())
+  id_project   Int           @id @default(autoincrement())
   name_project String
-  created_at   DateTime  @default(now())
-  update_at    DateTime  @updatedAt
+  created_at   DateTime      @default(now())
+  update_at    DateTime      @updatedAt
   id_employee  Int
-  employee     Employee? @relation(fields: [id_employee], references: [id_employee])
-  DailyReport DailyReport[]
+  employee     Employee?     @relation(fields: [id_employee], references: [id_employee])
+  DailyReport  DailyReport[]
 }
 
 model KeyResult {
@@ -102,12 +102,12 @@ model DailyReport {
   id_daily_report Int       @id @default(autoincrement())
   id_employee     Int
   employee        Employee? @relation(fields: [id_employee], references: [id_employee])
-  date            DateTime
+  date            String
   task            String
   status          Progres
   link            String
-  id_project    Int?
-  project       Project?      @relation(fields: [id_project], references: [id_project])
+  id_project      Int?
+  project         Project?  @relation(fields: [id_project], references: [id_project])
 }
 
 enum Progres {
@@ -120,23 +120,23 @@ model Presensi {
   id_presensi Int       @id @default(autoincrement())
   id_employee Int
   employee    Employee? @relation(fields: [id_employee], references: [id_employee])
-  date        DateTime
-  start_time  DateTime
-  end_time    DateTime
+  date        String
+  start_time  String
+  end_time    String
 }
 
 model TimeOff {
-  id_time_off Int       @id @default(autoincrement())
+  id_time_off Int         @id @default(autoincrement())
   id_employee Int
-  employee    Employee? @relation(fields: [id_employee], references: [id_employee])
+  employee    Employee?   @relation(fields: [id_employee], references: [id_employee])
   start_date  DateTime
   end_date    DateTime
   attachment  String
-  type        typeTimeOff    
-  status      Status    @default(pending)
+  type        typeTimeOff
+  status      Status      @default(pending)
   description String?
-  created_at  DateTime  @default(now())
-  update_at   DateTime  @updatedAt
+  created_at  DateTime    @default(now())
+  update_at   DateTime    @updatedAt
 }
 
 enum typeTimeOff {

@@ -17,8 +17,8 @@ export class CreateEmployeeDto {
   @IsEnum(Pendidikan, { message: 'Pendidikan tidak valid' })
   pendidikan: Pendidikan;
 
-  @IsDate()
-  tanggal_lahir: Date;
+  @IsString()
+  tanggal_lahir: string;
 
   @IsString()
   tempat_lahir: string;

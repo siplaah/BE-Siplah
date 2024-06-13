@@ -32,13 +32,14 @@ export class EmployeeService {
       });
 
       return { message: 'Data karyawan berhasil ditambahkan', data: employee };
-    } catch (error) {
+    } catch (error) {  
+      console.log(error);    
       if (error instanceof BadRequestException) {
         throw error; // Langsung lempar kesalahan BadRequestException
       }
       throw new BadRequestException(
         `Gagal menambahkan data karyawan: ${error.message}`,
-      );
+      );    
     }
   }
 
