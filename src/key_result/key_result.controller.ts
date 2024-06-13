@@ -3,9 +3,9 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Put,
   // UseGuards,
 } from '@nestjs/common';
 import { KeyResultService } from './key_result.service';
@@ -33,7 +33,7 @@ export class KeyResultController {
     return this.keyResultService.findOne({ id_key_result: +id });
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: string,
     @Body() updateKeyResultDto: UpdateKeyResultDto,
