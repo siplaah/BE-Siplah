@@ -1,4 +1,3 @@
-// src/overtime/overtime.controller.ts
 import {
   Controller,
   Get,
@@ -31,7 +30,17 @@ export class OvertimeController {
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
     }
-    return this.overtimeService.create(createOvertimeDto, id_employee);
+    const formattedData = {
+      ...createOvertimeDto,
+      start_date: new Date(createOvertimeDto.start_date),
+      end_date: new Date(createOvertimeDto.end_date),
+    };
+
+    const result = await this.overtimeService.create(
+      formattedData,
+      id_employee,
+    );
+    return result;
   }
 
   @Get()

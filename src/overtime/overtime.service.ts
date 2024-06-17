@@ -17,12 +17,12 @@ export class OvertimeService {
       const tambahOvertime = await this.prisma.overtimes.create({
         data: {
           id_employee: id_employee,
-          start_date: new Date(createOvertimeDto.start_date),
-          end_date: new Date(createOvertimeDto.end_date),
-          start_time: new Date(createOvertimeDto.start_time),
-          end_time: new Date(createOvertimeDto.end_time),
+          start_date: createOvertimeDto.start_date.toISOString(),
+          end_date: createOvertimeDto.end_date.toISOString(),
+          start_time: createOvertimeDto.start_time,
+          end_time: createOvertimeDto.end_time,
           attachment: createOvertimeDto.attachment,
-          status: 'pending', // Set default status to pending
+          status: createOvertimeDto.status,
           description: createOvertimeDto.description,
         },
       });
@@ -73,12 +73,8 @@ export class OvertimeService {
           end_date: updateOvertimeDto.end_date
             ? new Date(updateOvertimeDto.end_date)
             : undefined,
-          start_time: updateOvertimeDto.start_time
-            ? new Date(updateOvertimeDto.start_time)
-            : undefined,
-          end_time: updateOvertimeDto.end_time
-            ? new Date(updateOvertimeDto.end_time)
-            : undefined,
+          start_time: updateOvertimeDto.start_time,
+          end_time: updateOvertimeDto.end_time,
           attachment: updateOvertimeDto.attachment,
           status: updateOvertimeDto.status,
           description: updateOvertimeDto.description,

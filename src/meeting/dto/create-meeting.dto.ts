@@ -10,11 +10,11 @@ export class CreateMeetingDto {
   date: string;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsString()
   start_time: string;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsString()
   end_time: string;
 
   @IsNotEmpty()

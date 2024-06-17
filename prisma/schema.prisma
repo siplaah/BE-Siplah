@@ -84,8 +84,8 @@ model Overtimes {
   employee    Employee? @relation(fields: [id_employee], references: [id_employee])
   start_date  DateTime
   end_date    DateTime
-  start_time  DateTime
-  end_time    DateTime
+  start_time  String
+  end_time    String
   attachment  String
   status      Status    @default(pending)
   description String?
@@ -152,8 +152,8 @@ model Meeting {
   id_employee   Int
   employee      Employee? @relation(fields: [id_employee], references: [id_employee])
   date          DateTime
-  start_time    DateTime
-  end_time      DateTime
+  start_time    String
+  end_time      String
   link_meeting  String
   description   String
 }
