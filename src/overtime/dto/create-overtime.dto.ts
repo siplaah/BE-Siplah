@@ -10,18 +10,18 @@ import {
 export class CreateOvertimeDto {
   @IsNotEmpty()
   @IsDateString()
-  start_date: string;
+  start_date: Date;
 
   @IsNotEmpty()
   @IsDateString()
-  end_date: string;
+  end_date: Date;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsString()
   start_time: string;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsString()
   end_time: string;
 
   @IsNotEmpty()
@@ -29,7 +29,7 @@ export class CreateOvertimeDto {
   attachment: string;
 
   @IsNotEmpty()
-  @IsEnum(Status, { message: 'Status tidak valid' })
+  @IsEnum(Status)
   status: Status;
 
   @IsOptional()

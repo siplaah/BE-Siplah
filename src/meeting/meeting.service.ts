@@ -14,8 +14,8 @@ export class MeetingService {
         data: {
           id_employee: createMeetingDto.id_employee,
           date: new Date(createMeetingDto.date),
-          start_time: new Date(createMeetingDto.start_time),
-          end_time: new Date(createMeetingDto.end_time),
+          start_time: createMeetingDto.start_time,
+          end_time: createMeetingDto.end_time,
           link_meeting: createMeetingDto.link_meeting,
           description: createMeetingDto.description,
         },
@@ -54,12 +54,8 @@ export class MeetingService {
           date: updateMeetingDto.date
             ? new Date(updateMeetingDto.date)
             : undefined,
-          start_time: updateMeetingDto.start_time
-            ? new Date(updateMeetingDto.start_time)
-            : undefined,
-          end_time: updateMeetingDto.end_time
-            ? new Date(updateMeetingDto.end_time)
-            : undefined,
+          start_time: updateMeetingDto.start_time,
+          end_time: updateMeetingDto.end_time,
           link_meeting: updateMeetingDto.link_meeting,
           description: updateMeetingDto.description,
         },
