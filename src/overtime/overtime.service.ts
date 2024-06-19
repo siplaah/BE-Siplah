@@ -13,7 +13,10 @@ export class OvertimeService {
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
     }
+
+    
     try {
+
       const tambahOvertime = await this.prisma.overtimes.create({
         data: {
           id_employee: id_employee,
