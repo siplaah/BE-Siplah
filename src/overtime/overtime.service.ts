@@ -13,7 +13,10 @@ export class OvertimeService {
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
     }
+
+    
     try {
+
       const tambahOvertime = await this.prisma.overtimes.create({
         data: {
           id_employee: id_employee,
@@ -122,16 +125,36 @@ export class OvertimeService {
     });
   }
 
-  async reject(id: number, description: string) {
-    if (!description) {
-      throw new BadRequestException(
-        'Deskripsi alasan penolakan harus disertakan',
-      );
-    }
+  async reject(id_overtime: number, description: string) {
+    const descriptionStr = String(description); // Convert description to string
 
-    return this.prisma.overtimes.update({
-      where: { id_overtime: id },
-      data: { status: 'rejected', description },
-    });
+    console.log(`Rejecting overtime with id: ${id_overtime} and description: ${descriptionStr}`);
+
+    try {
+      const existingRecord = await this.prisma.overtimes.findUnique({
+        where: {
+          id_overtime: id_overtime,
+        },
+      });
+
+      if (!existingRecord) {
+        console.log(`No overtime record found with id: ${id_overtime}`);
+        throw new Error(`No overtime record found with id: ${id_overtime}`);
+      }
+
+      const updateResult = await this.prisma.overtimes.update({
+        where: {
+          id_overtime: id_overtime, // Ensure id_overtime is provided here
+        },
+        data: {
+          status: 'rejected',
+          description: descriptionStr,
+        },
+      });
+      return updateResult;
+    } catch (error) {
+      console.error('Error during update:', error);
+      throw error;
+    }
   }
 }
