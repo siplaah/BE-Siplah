@@ -12,16 +12,20 @@ export class OvertimeService {
   async create(createOvertimeDto: CreateOvertimeDto, id_employee: number) {
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
-    }
-
-    
+    }  
     try {
+      const startDate = new Date(createOvertimeDto.start_date);
+        const endDate = new Date(createOvertimeDto.end_date);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            throw new BadRequestException('Invalid date format');
+        }
 
       const tambahOvertime = await this.prisma.overtimes.create({
         data: {
           id_employee: id_employee,
-          start_date: createOvertimeDto.start_date.toISOString(),
-          end_date: createOvertimeDto.end_date.toISOString(),
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
           start_time: createOvertimeDto.start_time,
           end_time: createOvertimeDto.end_time,
           attachment: createOvertimeDto.attachment,
@@ -127,8 +131,6 @@ export class OvertimeService {
 
   async reject(id_overtime: number, description: string) {
     const descriptionStr = String(description); // Convert description to string
-
-    console.log(`Rejecting overtime with id: ${id_overtime} and description: ${descriptionStr}`);
 
     try {
       const existingRecord = await this.prisma.overtimes.findUnique({

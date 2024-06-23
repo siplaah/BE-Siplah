@@ -10,7 +10,15 @@ export class TimeOffService {
 
   async create(createTimeOffDto: CreateTimeOffDto, id_employee: number) {
     try {
-      const { start_date, end_date } = createTimeOffDto;
+      const startDate = new Date(createTimeOffDto.start_date);
+        const endDate = new Date(createTimeOffDto.end_date);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            throw new BadRequestException('Invalid date format');
+        }
+
+        const start_date = startDate.toISOString();
+        const end_date = endDate.toISOString();
       const total_hari = this.hitungTotalHari(start_date, end_date);
 
       if (total_hari <= 0) {
@@ -20,8 +28,8 @@ export class TimeOffService {
       const tambahCuti = await this.prisma.timeOff.create({
         data: {
           id_employee: id_employee,
-          start_date: new Date(createTimeOffDto.start_date),
-          end_date: new Date(createTimeOffDto.end_date),
+          start_date: start_date,
+          end_date: end_date,
           type: createTimeOffDto.type,
           attachment: createTimeOffDto.attachment,
           status: 'pending',
@@ -40,7 +48,18 @@ export class TimeOffService {
         jumlah_cuti: employee.cuti,
       };
     } catch (error) {
-      throw new BadRequestException('Gagal menambahkan pengajuan', error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      
+      console.log(createTimeOffDto.start_date);
+      // Log the error details for debugging
+      console.error('Error creating time off request:', error);
+
+      // Return a more specific error message if possible
+      throw new BadRequestException(
+        'Gagal menambahkan pengajuan: ' + error.message,
+      );
     }
   }
 
@@ -57,7 +76,7 @@ export class TimeOffService {
           jumlah_cuti: employee.cuti,
         };
       }),
-    );
+      );
     return showTotalCuti;
   }
 
@@ -190,31 +209,39 @@ export class TimeOffService {
     };
   }
 
-  async reject(id: number, description: string) {
-    const getTimeOff = await this.prisma.timeOff.findUnique({
-      where: { id_time_off: id },
-    });
+  async reject(id_time_off: number, description: string) {
+    const descriptionStr = String(description);
 
-    if (!getTimeOff) {
-      throw new BadRequestException('Pengajuan tidak dapat ditemukan');
+    try {
+      const getTimeOff = await this.prisma.timeOff.findUnique({
+        where: { id_time_off: id_time_off },
+      });
+
+      if (!getTimeOff) {
+        throw new BadRequestException('Pengajuan tidak dapat ditemukan');
+      }
+
+      if (getTimeOff.status === 'approved') {
+        throw new BadRequestException(
+          'Pengajuan yang sudah diapprove tidak dapat direject',
+        );
+      }
+
+      if (!description) {
+        throw new BadRequestException(
+          'Deskripsi alasan penolakan harus disertakan',
+        );
+      }
+
+      const updateResult = this.prisma.timeOff.update({
+        where: { id_time_off: id_time_off },
+        data: { status: 'rejected', description },
+      });
+      return updateResult;
+    } catch (error) {
+      console.error('Error during update:', error);
+      throw error;
     }
-
-    if (getTimeOff.status === 'approved') {
-      throw new BadRequestException(
-        'Pengajuan yang sudah diapprove tidak dapat direject',
-      );
-    }
-
-    if (!description) {
-      throw new BadRequestException(
-        'Deskripsi alasan penolakan harus disertakan',
-      );
-    }
-
-    return this.prisma.timeOff.update({
-      where: { id_time_off: id },
-      data: { status: 'rejected', description },
-    });
   }
 
   private hitungTotalHari(start_date: string, end_date: string): number {
