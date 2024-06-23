@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
 // import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from 'src/prisma.service';
 import { hashSync, verifySync } from '@node-rs/bcrypt';
@@ -12,10 +12,22 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class EmployeeService {
   constructor(private prisma: PrismaService) {}
+
   async create(createEmployee: Prisma.EmployeeCreateInput) {
     try {
       const hashedPassword = hashSync(createEmployee.password, 10);
-      const employeeData = { ...createEmployee, password: hashedPassword };
+      const tanggalLahir = new Date(createEmployee.tanggal_lahir);
+      const startWorking = new Date(createEmployee.start_working);
+
+      if (isNaN(tanggalLahir.getTime()) || isNaN(startWorking.getTime())) {
+        throw new BadRequestException('Invalid date format');
+      }
+      const employeeData = {
+        ...createEmployee,
+        password: hashedPassword,
+        tanggal_lahir: tanggalLahir.toISOString(),
+        start_working: startWorking.toISOString(),
+      };
 
       const exist = await this.prisma.employee.findFirst({
         where: {
@@ -32,14 +44,14 @@ export class EmployeeService {
       });
 
       return { message: 'Data karyawan berhasil ditambahkan', data: employee };
-    } catch (error) {  
-      console.log(error);    
+    } catch (error) {
+      console.log(error);
       if (error instanceof BadRequestException) {
         throw error; // Langsung lempar kesalahan BadRequestException
       }
       throw new BadRequestException(
         `Gagal menambahkan data karyawan: ${error.message}`,
-      );    
+      );
     }
   }
 

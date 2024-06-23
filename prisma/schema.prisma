@@ -22,21 +22,22 @@ model Jabatan {
 }
 
 model Employee {
-  id_employee   Int           @id @unique @default(autoincrement())
+  id_employee   Int            @id @unique @default(autoincrement())
   name          String
   email         String
   password      String
   alamat        String
   pendidikan    Pendidikan
-  tanggal_lahir String
+  tanggal_lahir DateTime
   tempat_lahir  String
   keterangan    Keterangan
-  start_working String
-  cuti          Int?          @default(12)
-  createAt      DateTime      @default(now())
-  updateAt      DateTime      @updatedAt
+  deskripsi     StatusKaryawan
+  start_working DateTime
+  cuti          Int?           @default(12)
+  createAt      DateTime       @default(now())
+  updateAt      DateTime       @updatedAt
   id_jabatan    Int?
-  jabatan       Jabatan?      @relation(fields: [id_jabatan], references: [id_jabatan])
+  jabatan       Jabatan?       @relation(fields: [id_jabatan], references: [id_jabatan])
   Project       Project[]
   DailyReport   DailyReport[]
   Presensi      Presensi[]
@@ -58,6 +59,11 @@ enum Keterangan {
   Freelance
   Partime
   Probation
+}
+
+enum StatusKaryawan {
+  Aktif
+  NonAktif
 }
 
 model Project {
@@ -146,15 +152,13 @@ enum typeTimeOff {
   melahirkan
 }
 
-
 model Meeting {
-  id_meeting    Int     @id @default(autoincrement())
-  id_employee   Int
-  employee      Employee? @relation(fields: [id_employee], references: [id_employee])
-  date          DateTime
-  start_time    String
-  end_time      String
-  link_meeting  String
-  description   String
+  id_meeting   Int       @id @default(autoincrement())
+  id_employee  Int
+  employee     Employee? @relation(fields: [id_employee], references: [id_employee])
+  date         DateTime
+  start_time   String
+  end_time     String
+  link_meeting String
+  description  String
 }
-
