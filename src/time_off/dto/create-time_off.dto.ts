@@ -10,11 +10,11 @@ import { typeTimeOff, Status } from '@prisma/client';
 export class CreateTimeOffDto {
   @IsNotEmpty()
   @IsDateString()
-  start_date: string;
+  start_date: Date;
 
   @IsNotEmpty()
   @IsDateString()
-  end_date: string;
+  end_date: Date;
 
   @IsNotEmpty()
   @IsEnum(typeTimeOff, { message: 'Type tidak valid' })

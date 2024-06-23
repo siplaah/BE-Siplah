@@ -34,14 +34,14 @@ export class OvertimeController {
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
     }
-    const formattedData = {
-      ...createOvertimeDto,
-      start_date: new Date(createOvertimeDto.start_date),
-      end_date: new Date(createOvertimeDto.end_date),
-    };
+    // const formattedData = {
+    //   ...createOvertimeDto,
+    //   start_date: new Date(createOvertimeDto.start_date),
+    //   end_date: new Date(createOvertimeDto.end_date),
+    // };
 
     const result = await this.overtimeService.create(
-      formattedData,
+      createOvertimeDto,
       id_employee,
     );
     return result;

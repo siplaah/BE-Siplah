@@ -30,6 +30,7 @@ export class AuthService {
           name: employee.name,
           email: employee.email,
           jabatan: namaJabatan,
+          cuti: employee.cuti,
         },
       });
       return {
@@ -39,6 +40,7 @@ export class AuthService {
           name: employee.name,
           email: employee.email,
           jabatan: namaJabatan,
+          cuti: employee.cuti,
         },
       };
     } catch (error) {
