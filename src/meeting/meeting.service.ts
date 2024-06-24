@@ -9,12 +9,19 @@ export class MeetingService {
   constructor(private prisma: PrismaService) {}
 
   async create(createMeetingDto: CreateMeetingDto) {
+    const dateMeeting = new Date(createMeetingDto.date)
+    
+    if (isNaN(dateMeeting.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
     const { id_employee, ...meetingData } = createMeetingDto;
+    const isoDate = dateMeeting.toISOString();
 
     try {
       const createMeeting = await this.prisma.meeting.create({
         data: {
           ...meetingData,
+          date: isoDate,
           meetingEmployees: {
             create: id_employee.map((id) => ({
               employee: { connect: { id_employee: id } },
@@ -32,14 +39,14 @@ export class MeetingService {
 
   findAll() {
     return this.prisma.meeting.findMany({
-      include: { employee: true },
+      include: { meetingEmployees: true },
     });
   }
 
   async findOne(getMeetingbyId: Prisma.MeetingWhereUniqueInput) {
     const getMeeting = await this.prisma.meeting.findUnique({
       where: getMeetingbyId,
-      include: { employee: true },
+      include: { meetingEmployees: true },
     });
     if (!getMeeting) {
       throw new BadRequestException('data tidak ditemukan');
@@ -53,9 +60,17 @@ export class MeetingService {
     updateMeetingDto: UpdateMeetingDto,
   ) {
     const { id_employee, ...meetingData } = updateMeetingDto;
+    const dateMeeting = new Date(updateMeetingDto.date)
+    
+    if (isNaN(dateMeeting.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
+    const isoDate = dateMeeting.toISOString();
+    
     try {
       const updateData: Prisma.MeetingUpdateInput = {
         ...meetingData,
+        date: isoDate,
         meetingEmployees: {
           connect: id_employee.map((id) => ({
             id_meeting_employee: id, 
@@ -73,7 +88,6 @@ export class MeetingService {
         meeting: updateMeeting,
       };
     } catch (error) {
-      // Handle specific Prisma error P2025 (not found)
       throw error;
     }
   }
@@ -81,9 +95,13 @@ export class MeetingService {
 
   async remove(id: number) {
     try {
+      await this.prisma.meetingEmployee.deleteMany({
+        where: { id_meeting: id },
+      });
+
       const deleteMeeting = await this.prisma.meeting.delete({
         where: { id_meeting: id },
-        include: { employee: true },
+        include: { meetingEmployees: true },
       });
       if (!deleteMeeting) {
         throw new BadRequestException('Data meeting tidak dapat ditemukan');
