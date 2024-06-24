@@ -43,7 +43,9 @@ model Employee {
   Presensi      Presensi[]
   overtimes     Overtimes[]
   time_off      TimeOff[]
-  meeting       Meeting[]
+  meeting       MeetingEmployee[]   @relation("EmployeeMeetings")
+  assessmentEmployee  AssessmentEmployee[]  
+
 }
 
 enum Pendidikan {
@@ -82,6 +84,7 @@ model KeyResult {
   target        Int
   created_at    DateTime @default(now())
   update_at     DateTime @updatedAt
+  assessmentEmployee  AssessmentEmployee[]
 }
 
 model Overtimes {
@@ -153,12 +156,44 @@ enum typeTimeOff {
 }
 
 model Meeting {
-  id_meeting   Int       @id @default(autoincrement())
-  id_employee  Int
-  employee     Employee? @relation(fields: [id_employee], references: [id_employee])
-  date         DateTime
-  start_time   String
-  end_time     String
-  link_meeting String
-  description  String
+  id_meeting    Int                @id @default(autoincrement())
+  date          DateTime
+  start_time    String
+  end_time      String
+  link_meeting  String
+  description   String
+  employee    MeetingEmployee[]  @relation("MeetingEmployees")
+  created_at  DateTime    @default(now())
+  update_at   DateTime    @updatedAt
+}
+
+model MeetingEmployee {
+  id_meeting_employee   Int       @id @default(autoincrement())
+  id_meeting            Int
+  id_employee           Int
+  meeting               Meeting   @relation(fields: [id_meeting], references: [id_meeting], name: "MeetingEmployees")
+  employee              Employee  @relation(fields: [id_employee], references: [id_employee], name: "EmployeeMeetings")
+}
+
+model AssessmentEmployee {
+  id_assessment   Int       @id @default(autoincrement())
+  id_key_result   Int
+  keyResult       KeyResult @relation(fields: [id_key_result], references: [id_key_result])
+  id_employee     Int
+  employee        Employee @relation(fields: [id_employee], references: [id_employee])
+  type            typeAssessment
+  target          Float
+  realisasi       Float
+  nilai_akhir     Float
+  total_nilai     Float
+  created_at  DateTime    @default(now())
+  update_at   DateTime    @updatedAt
+}
+
+enum typeAssessment {
+  should_stay_above
+  shoud_stay_below
+  should_increase_to
+  shoud_decrease_to
+  achieve_or_not
 }

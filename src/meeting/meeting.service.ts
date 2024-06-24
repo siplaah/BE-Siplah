@@ -9,16 +9,19 @@ export class MeetingService {
   constructor(private prisma: PrismaService) {}
 
   async create(createMeetingDto: CreateMeetingDto) {
+    const { id_employee, ...meetingData } = createMeetingDto;
+
     try {
       const createMeeting = await this.prisma.meeting.create({
         data: {
-          id_employee: createMeetingDto.id_employee,
-          date: new Date(createMeetingDto.date),
-          start_time: createMeetingDto.start_time,
-          end_time: createMeetingDto.end_time,
-          link_meeting: createMeetingDto.link_meeting,
-          description: createMeetingDto.description,
+          ...meetingData,
+          meetingEmployees: {
+            create: id_employee.map((id) => ({
+              employee: { connect: { id_employee: id } },
+            })),
+          },
         },
+        include: { meetingEmployees: true },
       });
       return createMeeting;
     } catch (error) {
@@ -28,12 +31,15 @@ export class MeetingService {
   }
 
   findAll() {
-    return this.prisma.meeting.findMany();
+    return this.prisma.meeting.findMany({
+      include: { employee: true },
+    });
   }
 
   async findOne(getMeetingbyId: Prisma.MeetingWhereUniqueInput) {
     const getMeeting = await this.prisma.meeting.findUnique({
       where: getMeetingbyId,
+      include: { employee: true },
     });
     if (!getMeeting) {
       throw new BadRequestException('data tidak ditemukan');
@@ -46,39 +52,38 @@ export class MeetingService {
     where: Prisma.MeetingWhereUniqueInput,
     updateMeetingDto: UpdateMeetingDto,
   ) {
+    const { id_employee, ...meetingData } = updateMeetingDto;
     try {
-      const updateMeeting = await this.prisma.meeting.update({
-        where,
-        data: {
-          id_employee: updateMeetingDto.id_employee,
-          date: updateMeetingDto.date
-            ? new Date(updateMeetingDto.date)
-            : undefined,
-          start_time: updateMeetingDto.start_time,
-          end_time: updateMeetingDto.end_time,
-          link_meeting: updateMeetingDto.link_meeting,
-          description: updateMeetingDto.description,
+      const updateData: Prisma.MeetingUpdateInput = {
+        ...meetingData,
+        meetingEmployees: {
+          connect: id_employee.map((id) => ({
+            id_meeting_employee: id, 
+          })),
         },
+      };
+  
+      const updateMeeting = await this.prisma.meeting.update({
+        where: where,
+        data: updateData,
+        include: { meetingEmployees: true },
       });
       return {
         message: 'Data meeting berhasil di update',
         meeting: updateMeeting,
       };
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
-        throw new BadRequestException('Data meeting tidak dapat ditemukan');
-      }
+      // Handle specific Prisma error P2025 (not found)
       throw error;
     }
   }
+  
 
   async remove(id: number) {
     try {
       const deleteMeeting = await this.prisma.meeting.delete({
         where: { id_meeting: id },
+        include: { employee: true },
       });
       if (!deleteMeeting) {
         throw new BadRequestException('Data meeting tidak dapat ditemukan');
