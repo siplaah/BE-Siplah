@@ -1,9 +1,10 @@
-import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateMeetingDto {
   @IsNotEmpty()
-  @IsInt()
-  id_employee: number;
+  @IsArray()
+  @IsInt({ each: true })
+  id_employee: number[];
 
   @IsNotEmpty()
   @IsDateString()
