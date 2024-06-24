@@ -43,7 +43,7 @@ model Employee {
   Presensi      Presensi[]
   overtimes     Overtimes[]
   time_off      TimeOff[]
-  meeting       MeetingEmployee[]   @relation("EmployeeMeetings")
+  meetingEmployees       MeetingEmployee[]   @relation("EmployeeMeetings")
   assessmentEmployee  AssessmentEmployee[]  
 
 }
@@ -162,7 +162,7 @@ model Meeting {
   end_time      String
   link_meeting  String
   description   String
-  employee    MeetingEmployee[]  @relation("MeetingEmployees")
+  meetingEmployees    MeetingEmployee[]  @relation("MeetingEmployees")
   created_at  DateTime    @default(now())
   update_at   DateTime    @updatedAt
 }
@@ -173,6 +173,7 @@ model MeetingEmployee {
   id_employee           Int
   meeting               Meeting   @relation(fields: [id_meeting], references: [id_meeting], name: "MeetingEmployees")
   employee              Employee  @relation(fields: [id_employee], references: [id_employee], name: "EmployeeMeetings")
+
 }
 
 model AssessmentEmployee {
