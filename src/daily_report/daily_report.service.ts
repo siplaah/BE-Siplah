@@ -7,16 +7,41 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class DailyReportService {
   constructor(private prisma: PrismaService) {}
-  async create(createDailyReport: Prisma.DailyReportCreateInput) {
+
+  async create(createDailyReportDto: CreateDailyReportDto, id_employee: number) {
+    if (!id_employee) {
+      throw new BadRequestException('Employee ID is required');
+    }  
     try {
+      const date = new Date(createDailyReportDto.date);
+
       const tambahDailyReport = await this.prisma.dailyReport.create({
-        data: createDailyReport,
+        data: {
+          id_employee: id_employee,
+          date: date.toISOString(),
+          task: createDailyReportDto.task,
+          status: createDailyReportDto.status,
+          link: createDailyReportDto.link,
+          id_project: createDailyReportDto.id_project,
+        },
       });
       return tambahDailyReport;
     } catch (error) {
-      throw new BadRequestException('Gagal Menambahkan Daily Report');
+      console.error('Error creating overtime:', error);
+      throw new BadRequestException('Gagal menambahkan pengajuan');
     }
   }
+
+  // async create(createDailyReport: Prisma.DailyReportCreateInput) {
+  //   try {
+  //     const tambahDailyReport = await this.prisma.dailyReport.create({
+  //       data: createDailyReport,
+  //     });
+  //     return tambahDailyReport;
+  //   } catch (error) {
+  //     throw new BadRequestException('Gagal Menambahkan Daily Report');
+  //   }
+  // }
 
   async findAll() {
     return await this.prisma.dailyReport.findMany();
