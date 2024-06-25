@@ -22,30 +22,29 @@ model Jabatan {
 }
 
 model Employee {
-  id_employee   Int            @id @unique @default(autoincrement())
-  name          String
-  email         String
-  password      String
-  alamat        String
-  pendidikan    Pendidikan
-  tanggal_lahir DateTime
-  tempat_lahir  String
-  keterangan    Keterangan
-  deskripsi     StatusKaryawan
-  start_working DateTime
-  cuti          Int?           @default(12)
-  createAt      DateTime       @default(now())
-  updateAt      DateTime       @updatedAt
-  id_jabatan    Int?
-  jabatan       Jabatan?       @relation(fields: [id_jabatan], references: [id_jabatan])
-  Project       Project[]
-  DailyReport   DailyReport[]
-  Presensi      Presensi[]
-  overtimes     Overtimes[]
-  time_off      TimeOff[]
-  meetingEmployees       MeetingEmployee[]   @relation("EmployeeMeetings")
-  assessmentEmployee  AssessmentEmployee[]  
-
+  id_employee        Int                  @id @unique @default(autoincrement())
+  name               String
+  email              String
+  password           String
+  alamat             String
+  pendidikan         Pendidikan
+  tanggal_lahir      DateTime
+  tempat_lahir       String
+  keterangan         Keterangan
+  deskripsi          StatusKaryawan @default(Aktif)
+  start_working      DateTime
+  cuti               Int?                 @default(12)
+  createAt           DateTime             @default(now())
+  updateAt           DateTime             @updatedAt
+  id_jabatan         Int?
+  jabatan            Jabatan?             @relation(fields: [id_jabatan], references: [id_jabatan])
+  Project            Project[]
+  DailyReport        DailyReport[]
+  Presensi           Presensi[]
+  overtimes          Overtimes[]
+  time_off           TimeOff[]
+  meetingEmployees   MeetingEmployee[]    @relation("EmployeeMeetings")
+  assessmentEmployee AssessmentEmployee[]
 }
 
 enum Pendidikan {
@@ -79,12 +78,12 @@ model Project {
 }
 
 model KeyResult {
-  id_key_result Int      @id @default(autoincrement())
-  key_result    String
-  target        Int
-  created_at    DateTime @default(now())
-  update_at     DateTime @updatedAt
-  assessmentEmployee  AssessmentEmployee[]
+  id_key_result      Int                  @id @default(autoincrement())
+  key_result         String
+  target             Int
+  created_at         DateTime             @default(now())
+  update_at          DateTime             @updatedAt
+  assessmentEmployee AssessmentEmployee[]
 }
 
 model Overtimes {
@@ -112,27 +111,31 @@ model DailyReport {
   id_daily_report Int       @id @default(autoincrement())
   id_employee     Int
   employee        Employee? @relation(fields: [id_employee], references: [id_employee])
-  date            String
+  date            DateTime
   task            String
   status          Progres
   link            String
+  created_at      DateTime  @default(now())
+  update_at       DateTime  @updatedAt
   id_project      Int?
   project         Project?  @relation(fields: [id_project], references: [id_project])
 }
 
 enum Progres {
   Done
-  OnGoing
-  Pending
+  Doing
+  Todo
 }
 
 model Presensi {
   id_presensi Int       @id @default(autoincrement())
   id_employee Int
   employee    Employee? @relation(fields: [id_employee], references: [id_employee])
-  date        String
+  date        DateTime
   start_time  String
   end_time    String
+  created_at  DateTime  @default(now())
+  update_at   DateTime  @updatedAt
 }
 
 model TimeOff {
@@ -156,39 +159,38 @@ enum typeTimeOff {
 }
 
 model Meeting {
-  id_meeting    Int                @id @default(autoincrement())
-  date          DateTime
-  start_time    String
-  end_time      String
-  link_meeting  String
-  description   String
-  meetingEmployees    MeetingEmployee[]  @relation("MeetingEmployees")
-  created_at  DateTime    @default(now())
-  update_at   DateTime    @updatedAt
+  id_meeting       Int               @id @default(autoincrement())
+  date             DateTime
+  start_time       String
+  end_time         String
+  link_meeting     String
+  description      String
+  meetingEmployees MeetingEmployee[] @relation("MeetingEmployees")
+  created_at       DateTime          @default(now())
+  update_at        DateTime          @updatedAt
 }
 
 model MeetingEmployee {
-  id_meeting_employee   Int       @id @default(autoincrement())
-  id_meeting            Int
-  id_employee           Int
-  meeting               Meeting   @relation(fields: [id_meeting], references: [id_meeting], name: "MeetingEmployees")
-  employee              Employee  @relation(fields: [id_employee], references: [id_employee], name: "EmployeeMeetings")
-
+  id_meeting_employee Int      @id @default(autoincrement())
+  id_meeting          Int
+  id_employee         Int
+  meeting             Meeting  @relation(fields: [id_meeting], references: [id_meeting], name: "MeetingEmployees")
+  employee            Employee @relation(fields: [id_employee], references: [id_employee], name: "EmployeeMeetings")
 }
 
 model AssessmentEmployee {
-  id_assessment   Int       @id @default(autoincrement())
-  id_key_result   Int
-  keyResult       KeyResult @relation(fields: [id_key_result], references: [id_key_result])
-  id_employee     Int
-  employee        Employee @relation(fields: [id_employee], references: [id_employee])
-  type            typeAssessment
-  target          Float
-  realisasi       Float
-  nilai_akhir     Float
-  total_nilai     Float
-  created_at  DateTime    @default(now())
-  update_at   DateTime    @updatedAt
+  id_assessment Int            @id @default(autoincrement())
+  id_key_result Int
+  keyResult     KeyResult      @relation(fields: [id_key_result], references: [id_key_result])
+  id_employee   Int
+  employee      Employee       @relation(fields: [id_employee], references: [id_employee])
+  type          typeAssessment
+  target        Float
+  realisasi     Float
+  nilai_akhir   Float
+  total_nilai   Float
+  created_at    DateTime       @default(now())
+  update_at     DateTime       @updatedAt
 }
 
 enum typeAssessment {

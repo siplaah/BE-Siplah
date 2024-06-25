@@ -23,6 +23,15 @@ export class JabatanService {
     return this.prisma.jabatan.findMany();
   }
 
+  // manggil data dengan jabatan tertentu
+  findByNameJabatan(name_jabatan: string) {
+    return this.prisma.jabatan.findMany({
+      where: {
+        name_jabatan: name_jabatan,
+      },
+    });
+  }
+
   async findOne(getJabatanbyid: Prisma.JabatanWhereUniqueInput) {
     const jabatan=await this.prisma.jabatan.findUnique({
       where: getJabatanbyid,

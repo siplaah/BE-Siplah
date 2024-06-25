@@ -25,6 +25,16 @@ export class JabatanController {
     return this.jabatanService.findOne({id_jabatan:+id});
   }
 
+  // @Get('pm')
+  // async getPmData() {
+  //   try {
+  //     const pmData = await this.projectService.findByNameJabatan('pm');
+  //     return pmData;
+  //   } catch (error) {
+  //     throw new Error('Error getting PM data');
+  //   }
+  // }
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateJabatanDto: UpdateJabatanDto) {
     return this.jabatanService.update({id_jabatan:+id}, updateJabatanDto);
