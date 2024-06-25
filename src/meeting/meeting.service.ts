@@ -14,8 +14,11 @@ export class MeetingService {
     if (isNaN(dateMeeting.getTime())) {
       throw new BadRequestException('Invalid date format');
     }
-    const { id_employee, ...meetingData } = createMeetingDto;
     const isoDate = dateMeeting.toISOString();
+    const { id_employee, ...meetingData } = createMeetingDto;
+    if (!Array.isArray(id_employee)) {
+      throw new BadRequestException('id_employee must be an array');
+    }
 
     try {
       const createMeeting = await this.prisma.meeting.create({
