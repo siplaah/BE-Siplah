@@ -31,7 +31,12 @@ export class AssessmentService {
 
   async create(createAssessmentDto: CreateAssessmentDto) {
     try {
+      console.log('Received DTO:', createAssessmentDto);
       const { id_employee, assessment } = createAssessmentDto;
+
+      if (!assessment || !Array.isArray(assessment)) {
+        throw new BadRequestException('Assessment data is missing or invalid');
+      }
 
       const assessmentData = await Promise.all(
         assessment.map(async (item) => {
@@ -43,8 +48,8 @@ export class AssessmentService {
           }
           const nilai_akhir = this.NilaiAkhir(
             item.type,
-            keyResult.target,
             item.realisasi,
+            keyResult.target,
           );
           return {
             id_employee: id_employee,
@@ -59,7 +64,7 @@ export class AssessmentService {
       );
 
       const total_nilai =
-        assessmentData.reduce((acc, cur) => acc + cur.nilai_akhir, 0) /
+        assessmentData.reduce((total, item) => total + item.nilai_akhir, 0) /
         assessmentData.length;
       assessmentData.forEach((data) => {
         data.total_nilai = total_nilai;
@@ -145,7 +150,7 @@ export class AssessmentService {
     }));
 
     const total_nilai = (
-      formattedAssessment.reduce((acc, cur) => acc + cur.nilai_akhir, 0) /
+      formattedAssessment.reduce((total, item) => total + item.nilai_akhir, 0) /
       formattedAssessment.length
     ).toFixed(2);
 
@@ -186,7 +191,7 @@ export class AssessmentService {
       );
 
       const total_nilai =
-        assessmentData.reduce((acc, cur) => acc + cur.nilai_akhir, 0) /
+        assessmentData.reduce((total, item) => total + item.nilai_akhir, 0) /
         assessmentData.length;
 
       for (const data of assessmentData) {

@@ -1,5 +1,12 @@
-import { IsArray, IsEnum, IsInt, IsNumber, IsPositive, ValidateNested } from "class-validator";
-import { typeAssessment } from "@prisma/client";
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsPositive,
+  ValidateNested,
+} from 'class-validator';
+import { typeAssessment } from '@prisma/client';
 import { Type } from 'class-transformer';
 
 class AssessmentDto {
