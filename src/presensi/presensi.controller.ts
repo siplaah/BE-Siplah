@@ -1,17 +1,35 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException,
-  HttpStatus, } from '@nestjs/common';
+  HttpStatus, Req, BadRequestException,
+  UseGuards,} from '@nestjs/common';
 import { PresensiService } from './presensi.service';
 import { CreatePresensiDto } from './dto/create-presensi.dto';
 import { UpdatePresensiDto } from './dto/update-presensi.dto';
 import { ResponseEntity } from 'src/common/entity/response.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('presensi')
 export class PresensiController {
-  constructor(private readonly presensiService: PresensiService) {}
+  constructor(
+    private readonly presensiService: PresensiService
+    ) {}
+  
   @Post()
-  create(@Body() createPresensiDto: CreatePresensiDto) {
-    return this.presensiService.create(createPresensiDto);
-  }
+  async create(
+    @Body() createPresensiDto: CreatePresensiDto,
+    @Req() req,
+    ) {
+      const id_employee = req.employee.id;
+      if (!id_employee) {
+        throw new BadRequestException('Employee ID is required');
+      }
+      const result = await this.presensiService.create(
+        createPresensiDto,
+        id_employee,
+      );
+      return result;
+    }
+
 
   @Get()
   async findAll() {

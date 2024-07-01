@@ -8,10 +8,13 @@ import { Prisma } from '@prisma/client';
 export class DailyReportService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createDailyReportDto: CreateDailyReportDto, id_employee: number) {
+  async create(
+    createDailyReportDto: CreateDailyReportDto,
+    id_employee: number,
+  ) {
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
-    }  
+    }
     try {
       const date = new Date(createDailyReportDto.date);
 
@@ -31,17 +34,6 @@ export class DailyReportService {
       throw new BadRequestException('Gagal menambahkan pengajuan');
     }
   }
-
-  // async create(createDailyReport: Prisma.DailyReportCreateInput) {
-  //   try {
-  //     const tambahDailyReport = await this.prisma.dailyReport.create({
-  //       data: createDailyReport,
-  //     });
-  //     return tambahDailyReport;
-  //   } catch (error) {
-  //     throw new BadRequestException('Gagal Menambahkan Daily Report');
-  //   }
-  // }
 
   async findAll() {
     return await this.prisma.dailyReport.findMany();
@@ -86,15 +78,12 @@ export class DailyReportService {
           id_daily_report: id,
         },
       });
-
       if (!daily_report) throw new Error('Data daily report tidak ditemukan');
-
       await this.prisma.dailyReport.delete({
         where: {
           id_daily_report: id,
         },
       });
-
       return { message: 'Data karyawan berhasil dihapus', data: null };
     } catch (error) {
       throw new BadRequestException('Gagal menghapus data karyawan');

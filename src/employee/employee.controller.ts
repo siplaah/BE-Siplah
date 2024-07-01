@@ -25,22 +25,8 @@ export class EmployeeController {
 
   @Post()
   async create(@Body() createEmployee: Prisma.EmployeeCreateInput) {
-    
-
     return await this.employeeService.create(createEmployee);
-   
   }
-
-  // @Post()
-  // async create(@Body() createEmployeeDto: CreateEmployeeDto) {
-  //   try {
-  //     return new ResponseEntity(
-  //       await this.employeeService.create(createEmployeeDto),
-  //     );
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
 
   @Get()
   async findAll() {
@@ -80,10 +66,6 @@ export class EmployeeController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    try {
-      return new ResponseEntity(await this.employeeService.remove(+id));
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
+    return this.employeeService.remove(+id);
   }
 }
