@@ -19,7 +19,6 @@ import { ResponseEntity } from 'src/common/entity/response.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 
 @UseGuards(AuthGuard)
-
 @Controller('daily-report')
 export class DailyReportController {
   constructor(private readonly dailyReportService: DailyReportService) {}
@@ -28,9 +27,8 @@ export class DailyReportController {
   async create(
     @Body() createDailyReportDto: CreateDailyReportDto,
     @Req() req,
-    // return this.dailyReportService.create(createDailyReportDto);
-    ) {
-  const id_employee = req.employee.id;
+  ) {
+    const id_employee = req.employee.id;
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
     }
@@ -49,10 +47,12 @@ export class DailyReportController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.dailyReportService.findOne({ id_daily_report: +id });
   }
+
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -68,6 +68,7 @@ export class DailyReportController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+  
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.dailyReportService.remove(+id);

@@ -18,7 +18,6 @@ export class EmployeeService {
       const hashedPassword = hashSync(createEmployee.password, 10);
       const tanggalLahir = new Date(createEmployee.tanggal_lahir);
       const startWorking = new Date(createEmployee.start_working);
-
       if (isNaN(tanggalLahir.getTime()) || isNaN(startWorking.getTime())) {
         throw new BadRequestException('Invalid date format');
       }
@@ -28,21 +27,17 @@ export class EmployeeService {
         tanggal_lahir: tanggalLahir.toISOString(),
         start_working: startWorking.toISOString(),
       };
-
       const exist = await this.prisma.employee.findFirst({
         where: {
           email: createEmployee.email,
         },
       });
-
       if (exist) {
         throw new BadRequestException('Email sudah terdaftar');
       }
-
       const employee = await this.prisma.employee.create({
         data: employeeData,
       });
-
       return { message: 'Data karyawan berhasil ditambahkan', data: employee };
     } catch (error) {
       console.log(error);
@@ -92,23 +87,21 @@ export class EmployeeService {
 
   async remove(id: number) {
     try {
-      const employee = await this.prisma.employee.findUnique({
-        where: {
-          id_employee: id,
-        },
+      const hapusEmployee = await this.prisma.employee.delete({
+        where: { id_employee: id },
       });
-
-      if (!employee) throw new Error('Data karyawan tidak ditemukan');
-
-      await this.prisma.employee.delete({
-        where: {
-          id_employee: id,
-        },
-      });
-
-      return { message: 'Data karyawan berhasil dihapus', data: null };
+      if (!hapusEmployee) {
+        throw new NotFoundException('employee tidak ditemukan');
+      }
+      return { message: 'employee berhasil di hapus' };
     } catch (error) {
-      throw new BadRequestException('Gagal menghapus data karyawan');
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('employee tidak dapat ditemukan');
+      }
+      throw error;
     }
   }
 

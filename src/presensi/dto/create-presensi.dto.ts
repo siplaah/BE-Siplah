@@ -1,14 +1,16 @@
-
-import { IsEnum, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsDateString } from 'class-validator';
 
 export class CreatePresensiDto {
-    @IsString()
-  date: string;
+  @IsNotEmpty()
+  @IsDateString()
+  date: Date;
 
-  @IsString()
+  @IsNotEmpty()
+  @IsDateString()
   start_time: string;
 
-  @IsString()
+  @IsNotEmpty()
+  @IsDateString()
   end_time: string;
 
 }

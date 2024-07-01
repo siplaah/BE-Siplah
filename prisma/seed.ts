@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { jabatanData } from './data/jabatan';
 import { employeeData } from "./data/employee";
 import { projectData } from "./data/project";
+import { hashSync } from "@node-rs/bcrypt";
 
 
 const prisma = new PrismaClient()
@@ -16,9 +17,11 @@ async function main() {
   
     // Seeding data for Employee model
     for (const employee of employeeData) {
+      const hashedPassword = hashSync(employee.password, 10);
       await prisma.employee.create({
         data: {
           ...employee,
+          password: hashedPassword
         },
       });
     }
