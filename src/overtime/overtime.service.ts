@@ -12,14 +12,14 @@ export class OvertimeService {
   async create(createOvertimeDto: CreateOvertimeDto, id_employee: number) {
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
-    }  
+    }
     try {
       const startDate = new Date(createOvertimeDto.start_date);
-        const endDate = new Date(createOvertimeDto.end_date);
+      const endDate = new Date(createOvertimeDto.end_date);
 
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            throw new BadRequestException('Invalid date format');
-        }
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new BadRequestException('Invalid date format');
+      }
 
       const tambahOvertime = await this.prisma.overtimes.create({
         data: {
@@ -73,7 +73,6 @@ export class OvertimeService {
       const updateOvertime = await this.prisma.overtimes.update({
         where,
         data: {
-          // id_employee: updateOvertimeDto.id_employee,
           start_date: updateOvertimeDto.start_date
             ? new Date(updateOvertimeDto.start_date)
             : undefined,
@@ -83,7 +82,7 @@ export class OvertimeService {
           start_time: updateOvertimeDto.start_time,
           end_time: updateOvertimeDto.end_time,
           attachment: updateOvertimeDto.attachment,
-          status: updateOvertimeDto.status,
+          status: 'pending',
           description: updateOvertimeDto.description,
         },
       });
@@ -130,30 +129,41 @@ export class OvertimeService {
   }
 
   async reject(id_overtime: number, description: string) {
-    const descriptionStr = String(description); // Convert description to string
+    // const descriptionStr = String(description);
 
     try {
-      const existingRecord = await this.prisma.overtimes.findUnique({
+      const getOvertime = await this.prisma.overtimes.findUnique({
         where: {
           id_overtime: id_overtime,
         },
       });
 
-      if (!existingRecord) {
-        console.log(`No overtime record found with id: ${id_overtime}`);
-        throw new Error(`No overtime record found with id: ${id_overtime}`);
+      if (!getOvertime) {
+        throw new BadRequestException('Pengajuan tidak dapat ditemukan');
       }
 
-      const updateResult = await this.prisma.overtimes.update({
+      if (getOvertime.status === 'approved') {
+        throw new BadRequestException(
+          'Pengajuan yang sudah diapprove tidak dapat direject',
+        );
+      }
+
+      if (!description) {
+        throw new BadRequestException(
+          'Deskripsi alasan penolakan harus disertakan',
+        );
+      }
+
+      const updateOvertime = await this.prisma.overtimes.update({
         where: {
-          id_overtime: id_overtime, // Ensure id_overtime is provided here
+          id_overtime: id_overtime,
         },
         data: {
           status: 'rejected',
-          description: descriptionStr,
+          description: description,
         },
       });
-      return updateResult;
+      return updateOvertime;
     } catch (error) {
       console.error('Error during update:', error);
       throw error;

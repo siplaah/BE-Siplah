@@ -11,14 +11,14 @@ export class TimeOffService {
   async create(createTimeOffDto: CreateTimeOffDto, id_employee: number) {
     try {
       const startDate = new Date(createTimeOffDto.start_date);
-        const endDate = new Date(createTimeOffDto.end_date);
+      const endDate = new Date(createTimeOffDto.end_date);
 
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            throw new BadRequestException('Invalid date format');
-        }
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new BadRequestException('Invalid date format');
+      }
 
-        const start_date = startDate.toISOString();
-        const end_date = endDate.toISOString();
+      const start_date = startDate.toISOString();
+      const end_date = endDate.toISOString();
       const total_hari = this.hitungTotalHari(start_date, end_date);
 
       if (total_hari <= 0) {
@@ -51,7 +51,7 @@ export class TimeOffService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      
+
       console.log(createTimeOffDto.start_date);
       // Log the error details for debugging
       console.error('Error creating time off request:', error);
@@ -76,7 +76,7 @@ export class TimeOffService {
           jumlah_cuti: employee.cuti,
         };
       }),
-      );
+    );
     return showTotalCuti;
   }
 
@@ -116,7 +116,7 @@ export class TimeOffService {
             : undefined,
           attachment: updateTimeOffDto.attachment,
           type: updateTimeOffDto.type,
-          status: updateTimeOffDto.status,
+          status: 'pending',
           description: updateTimeOffDto.description,
         },
       });
@@ -210,8 +210,6 @@ export class TimeOffService {
   }
 
   async reject(id_time_off: number, description: string) {
-    const descriptionStr = String(description);
-
     try {
       const getTimeOff = await this.prisma.timeOff.findUnique({
         where: { id_time_off: id_time_off },
@@ -233,11 +231,11 @@ export class TimeOffService {
         );
       }
 
-      const updateResult = this.prisma.timeOff.update({
+      const updateTimeOff = this.prisma.timeOff.update({
         where: { id_time_off: id_time_off },
         data: { status: 'rejected', description },
       });
-      return updateResult;
+      return updateTimeOff;
     } catch (error) {
       console.error('Error during update:', error);
       throw error;
@@ -248,7 +246,7 @@ export class TimeOffService {
     const startDate = new Date(start_date);
     const endDate = new Date(end_date);
     const hitungWaktu = endDate.getTime() - startDate.getTime();
-    const hitungHari = Math.ceil(hitungWaktu / (1000 * 3600 * 24));
+    const hitungHari = Math.ceil(hitungWaktu / (1000 * 3600 * 24) + 1);
     return hitungHari;
   }
 

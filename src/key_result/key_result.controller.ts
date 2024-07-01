@@ -6,17 +6,21 @@ import {
   Param,
   Delete,
   Put,
-  // UseGuards,
+  UseGuards,
 } from '@nestjs/common';
 import { KeyResultService } from './key_result.service';
 import { CreateKeyResultDto } from './dto/create-key_result.dto';
 import { UpdateKeyResultDto } from './dto/update-key_result.dto';
-// import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthService } from 'src/auth/auth.service';
 
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @Controller('key-result')
 export class KeyResultController {
-  constructor(private readonly keyResultService: KeyResultService) {}
+  constructor(
+    private readonly keyResultService: KeyResultService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post()
   create(@Body() createKeyResultDto: CreateKeyResultDto) {
