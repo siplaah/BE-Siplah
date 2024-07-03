@@ -19,8 +19,30 @@ export class KeyResultService {
     }
   }
 
-  findAll() {
-    return this.prisma.keyResult.findMany();
+  async findAll(params: { page: number; pageSize: number; q?: string }) {
+    const { page, pageSize, q } = params;
+    const where = q
+      ? {
+          OR: [
+            {
+              key_result: {
+                contains: q,
+              },
+            },
+          ],
+        }
+      : {};
+
+    const [data, totalData] = await this.prisma.$transaction([
+      this.prisma.keyResult.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.keyResult.count({ where }),
+    ]);
+
+    return { data, totalData };
   }
 
   async findOne(getKeyResultbyId: Prisma.KeyResultWhereUniqueInput) {

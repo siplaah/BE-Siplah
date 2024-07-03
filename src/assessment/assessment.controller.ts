@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { AssessmentService } from './assessment.service';
 import { CreateAssessmentDto } from './dto/create-assessment.dto';
 import { UpdateAssessmentDto } from './dto/update-assessment.dto';
@@ -13,8 +22,20 @@ export class AssessmentController {
   }
 
   @Get()
-  findAll() {
-    return this.assessmentService.findAll();
+  findAll(
+    @Query()
+    query: {
+      page: number;
+      pageSize: number;
+      q?: string;
+      date?: string;
+    },
+  ) {
+    const page = parseInt(query.page as any) || 1;
+    const pageSize = parseInt(query.pageSize as any) || 10;
+    const q = query.q || '';
+    const date = query.date;
+    return this.assessmentService.findAll({ page, pageSize, q, date });
   }
 
   @Get(':id')
@@ -23,7 +44,10 @@ export class AssessmentController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateAssessmentDto: UpdateAssessmentDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateAssessmentDto: UpdateAssessmentDto,
+  ) {
     return this.assessmentService.update(+id, updateAssessmentDto);
   }
 
