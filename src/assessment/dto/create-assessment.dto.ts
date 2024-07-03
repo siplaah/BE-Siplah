@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsDateString,
   IsEnum,
   IsInt,
   IsNumber,
@@ -24,6 +25,9 @@ class AssessmentDto {
 export class CreateAssessmentDto {
   @IsInt()
   id_employee: number;
+
+  @IsDateString()
+  date: Date;
 
   @IsArray()
   @ValidateNested({ each: true })

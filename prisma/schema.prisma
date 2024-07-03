@@ -189,6 +189,7 @@ model AssessmentEmployee {
   realisasi     Float
   nilai_akhir   Float
   total_nilai   Float
+  date          DateTime
   created_at    DateTime       @default(now())
   update_at     DateTime       @updatedAt
 }

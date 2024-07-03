@@ -31,8 +31,8 @@ export class AssessmentService {
 
   async create(createAssessmentDto: CreateAssessmentDto) {
     try {
-      console.log('Received DTO:', createAssessmentDto);
       const { id_employee, assessment } = createAssessmentDto;
+      const date = new Date(createAssessmentDto.date);
 
       if (!assessment || !Array.isArray(assessment)) {
         throw new BadRequestException('Assessment data is missing or invalid');
@@ -53,6 +53,7 @@ export class AssessmentService {
           );
           return {
             id_employee: id_employee,
+            date: date.toISOString(),
             id_key_result: item.id_key_result,
             type: item.type,
             target: keyResult.target,
@@ -76,6 +77,7 @@ export class AssessmentService {
 
       return {
         id_employee,
+        date,
         assessment: assessmentData,
         total_nilai: parseFloat(total_nilai.toFixed(2)),
       };
@@ -85,18 +87,51 @@ export class AssessmentService {
     }
   }
 
-  async findAll() {
+  async findAll(params: {
+    page: number;
+    pageSize: number;
+    q?: string;
+    date?: string;
+  }) {
+    const { page, pageSize, q, date } = params;
+
+    const where: any = {};
+
+    if (q) {
+      where.employee = {
+        name: {
+          contains: q,
+          mode: 'insensitive', // Agar pencarian tidak case-sensitive
+        },
+      };
+    }
+
+    if (date) {
+      const startDate = new Date(date);
+      const endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + 1);
+
+      where.date = {
+        gte: startDate.toISOString(),
+        lt: endDate.toISOString(),
+      };
+    }
+
     const assessments = await this.prisma.assessmentEmployee.findMany({
+      where,
       include: {
         keyResult: true,
         employee: true,
       },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
 
     const groupByEmployee = assessments.reduce((result, assessment) => {
       const {
         id_employee,
         employee,
+        date,
         id_key_result,
         type,
         target,
@@ -110,6 +145,7 @@ export class AssessmentService {
             id_employee: employee.id_employee,
             nama: employee.name,
           },
+          date: date,
           assessment: [],
           total_nilai: parseFloat(total_nilai.toFixed(2)),
         };
@@ -119,12 +155,17 @@ export class AssessmentService {
         type,
         target,
         realisasi,
-        nilai_akhir: parseFloat(assessment.nilai_akhir.toFixed(2)),
+        nilai_akhir,
       });
       return result;
     }, {});
 
-    return Object.values(groupByEmployee);
+    const totalData = await this.prisma.assessmentEmployee.count({ where });
+
+    return {
+      data: Object.values(groupByEmployee),
+      totalData,
+    };
   }
 
   async findOne(id_employee: number) {

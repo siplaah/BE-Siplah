@@ -7,6 +7,7 @@ import {
   Delete,
   Put,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { KeyResultService } from './key_result.service';
 import { CreateKeyResultDto } from './dto/create-key_result.dto';
@@ -28,8 +29,14 @@ export class KeyResultController {
   }
 
   @Get()
-  findAll() {
-    return this.keyResultService.findAll();
+  async findAll(
+    @Query() query: { page: number; pageSize: number; q?: string },
+  ) {
+    const page = parseInt(query.page as any) || 1;
+    const pageSize = parseInt(query.pageSize as any) || 10;
+    const q = query.q || '';
+
+    return this.keyResultService.findAll({ page, pageSize, q });
   }
 
   @Get(':id')
