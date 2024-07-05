@@ -117,7 +117,7 @@ export class AssessmentService {
       };
     }
 
-    const assessments = await this.prisma.assessmentEmployee.findMany({
+    let assessments = await this.prisma.assessmentEmployee.findMany({
       where,
       include: {
         keyResult: true,
@@ -160,10 +160,17 @@ export class AssessmentService {
       return result;
     }, {});
 
-    const totalData = await this.prisma.assessmentEmployee.count({ where });
+    let groupedData = Object.values(groupByEmployee);
+
+    groupedData = groupedData.sort(
+      (a: any, b: any) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    const totalData = groupedData.length;
 
     return {
-      data: Object.values(groupByEmployee),
+      data: groupedData,
       totalData,
     };
   }
