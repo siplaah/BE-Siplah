@@ -14,22 +14,25 @@ export class PresensiController {
     private readonly presensiService: PresensiService
     ) {}
   
-  @Post()
-  async create(
-    @Body() createPresensiDto: CreatePresensiDto,
-    @Req() req,
+    @Post()
+    async create(
+      @Body() createPresensiDto: CreatePresensiDto,
+      @Req() req,
     ) {
       const id_employee = req.employee.id;
       if (!id_employee) {
         throw new BadRequestException('Employee ID is required');
       }
-      const result = await this.presensiService.create(
-        createPresensiDto,
-        id_employee,
-      );
-      return result;
+  
+      console.log('Received CreatePresensiDto:', createPresensiDto);
+  
+      const presensi = await this.presensiService.create(createPresensiDto, id_employee);
+  
+      // Ubah format tanggal di sini sebelum mengirim respons
+      presensi.date = new Date(presensi.date);
+  
+      return presensi;
     }
-
 
   @Get()
   async findAll() {

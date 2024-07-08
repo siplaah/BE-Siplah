@@ -26,14 +26,14 @@ model Employee {
   name               String
   email              String
   password           String
-  alamat             String
-  gender             JenisKelamin
-  pendidikan         Pendidikan
-  tanggal_lahir      DateTime
-  tempat_lahir       String
-  keterangan         Keterangan
-  deskripsi          StatusKaryawan       @default(Aktif)
-  start_working      DateTime
+  alamat             String?
+  gender             JenisKelamin?
+  pendidikan         Pendidikan?
+  tanggal_lahir      DateTime?
+  tempat_lahir       String?
+  keterangan         Keterangan?
+  deskripsi          StatusKaryawan?       @default(Aktif)
+  start_working      DateTime?
   cuti               Int?                 @default(12)
   createAt           DateTime             @default(now())
   updateAt           DateTime             @updatedAt
@@ -137,9 +137,9 @@ model Presensi {
   id_presensi Int       @id @default(autoincrement())
   id_employee Int
   employee    Employee? @relation(fields: [id_employee], references: [id_employee])
-  date        DateTime
+  date        DateTime  @default(now()) @map(name: "date")
   start_time  String
-  end_time    String
+  end_time    String?
   created_at  DateTime  @default(now())
   update_at   DateTime  @updatedAt
 }

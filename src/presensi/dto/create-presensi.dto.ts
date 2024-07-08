@@ -1,16 +1,23 @@
-import { IsEnum, IsNotEmpty, IsString, IsDateString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsString, IsDateString, IsOptional } from 'class-validator';
 
 export class CreatePresensiDto {
-  @IsNotEmpty()
-  @IsDateString()
-  date: Date;
+  // @IsOptional()
+  // @IsDateString()
+  // date: Date;
 
   @IsNotEmpty()
   @IsString()
   start_time: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   end_time: string;
+
+  // @Transform(({ value }) => new Date(value))
+  // date: Date;
+
+  @Transform(({ value }) => new Date(value).toISOString().split('T')[0])
+  date: Date;
 
 }

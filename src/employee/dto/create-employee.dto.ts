@@ -14,7 +14,7 @@ export class CreateEmployeeDto {
   @IsString()
   alamat: string;
 
-  @IsEnum(JenisKelamin, { message: 'Pendidikan tidak valid' })
+  @IsEnum(JenisKelamin, { message: 'Jenis Kelamin tidak valid' })
   gender: JenisKelamin;
 
   @IsEnum(Pendidikan, { message: 'Pendidikan tidak valid' })
