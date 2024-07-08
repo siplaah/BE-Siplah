@@ -38,6 +38,14 @@ export class AssessmentService {
         throw new BadRequestException('Assessment data is missing or invalid');
       }
 
+      const totalKeyResults = await this.prisma.keyResult.count();
+
+      if (assessment.length !== totalKeyResults) {
+        throw new BadRequestException(
+          'Jumlah assessment tidak sesuai dengan jumlah key result yang ada',
+        );
+      }
+
       const assessmentData = await Promise.all(
         assessment.map(async (item) => {
           const keyResult = await this.prisma.keyResult.findUnique({
@@ -117,62 +125,73 @@ export class AssessmentService {
       };
     }
 
-    let assessments = await this.prisma.assessmentEmployee.findMany({
-      where,
-      include: {
-        keyResult: true,
-        employee: true,
-      },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    });
-
-    const groupByEmployee = assessments.reduce((result, assessment) => {
-      const {
-        id_employee,
-        employee,
-        date,
-        id_key_result,
-        type,
-        target,
-        realisasi,
-        nilai_akhir,
-        total_nilai,
-      } = assessment;
-      if (!result[id_employee]) {
-        result[id_employee] = {
-          employee: {
-            id_employee: employee.id_employee,
-            nama: employee.name,
-          },
-          date: date,
-          assessment: [],
-          total_nilai: parseFloat(total_nilai.toFixed(2)),
-        };
-      }
-      result[id_employee].assessment.push({
-        id_key_result,
-        type,
-        target,
-        realisasi,
-        nilai_akhir,
+    try {
+      const assessments = await this.prisma.assessmentEmployee.findMany({
+        where,
+        include: {
+          keyResult: true,
+          employee: true,
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
       });
-      return result;
-    }, {});
 
-    let groupedData = Object.values(groupByEmployee);
+      // Group assessments by employee
+      const groupByEmployee = assessments.reduce((result, assessment) => {
+        const {
+          id_employee,
+          employee,
+          date,
+          id_key_result,
+          type,
+          target,
+          realisasi,
+          nilai_akhir,
+          total_nilai,
+        } = assessment;
 
-    groupedData = groupedData.sort(
-      (a: any, b: any) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
+        if (!result[id_employee]) {
+          result[id_employee] = {
+            employee: {
+              id_employee: employee.id_employee,
+              nama: employee.name,
+            },
+            date: date,
+            assessment: [],
+            total_nilai: parseFloat(total_nilai.toFixed(2)),
+          };
+        }
 
-    const totalData = groupedData.length;
+        result[id_employee].assessment.push({
+          id_key_result,
+          type,
+          target,
+          realisasi,
+          nilai_akhir,
+        });
 
-    return {
-      data: groupedData,
-      totalData,
-    };
+        return result;
+      }, {});
+
+      // Convert grouped data to array
+      let groupedData = Object.values(groupByEmployee);
+
+      // Sort grouped data by date descending
+      groupedData = groupedData.sort(
+        (a: any, b: any) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
+
+      const totalData = groupedData.length;
+
+      return {
+        data: groupedData,
+        totalData,
+      };
+    } catch (error) {
+      console.error('Error fetching assessments:', error);
+      throw new Error('Failed to fetch assessments');
+    }
   }
 
   async findOne(id_employee: number) {
@@ -214,7 +233,8 @@ export class AssessmentService {
 
   async update(id_employee: number, updateAssessmentDto: UpdateAssessmentDto) {
     try {
-      const { assessment } = updateAssessmentDto;
+      const { assessment, date } = updateAssessmentDto;
+
       const assessmentData = await Promise.all(
         assessment.map(async (item) => {
           const keyResult = await this.prisma.keyResult.findUnique({
@@ -234,6 +254,7 @@ export class AssessmentService {
             target: keyResult.target,
             realisasi: item.realisasi,
             nilai_akhir: nilai_akhir,
+            date: new Date(date).toISOString(),
           };
         }),
       );
@@ -243,26 +264,59 @@ export class AssessmentService {
         assessmentData.length;
 
       for (const data of assessmentData) {
-        await this.prisma.assessmentEmployee.updateMany({
+        const existingRecord = await this.prisma.assessmentEmployee.findFirst({
           where: {
             id_employee: id_employee,
             id_key_result: data.id_key_result,
           },
-          data: {
-            type: data.type,
-            target: data.target,
-            realisasi: data.realisasi,
-            nilai_akhir: data.nilai_akhir,
-          },
         });
+
+        if (existingRecord) {
+          const updated = await this.prisma.assessmentEmployee.update({
+            where: {
+              id_assessment: existingRecord.id_assessment,
+            },
+            data: {
+              type: data.type,
+              target: data.target,
+              realisasi: data.realisasi,
+              nilai_akhir: data.nilai_akhir,
+              date: new Date(date).toISOString(),
+              total_nilai: total_nilai,
+            },
+          });
+          console.log(
+            `Updated assessment for employee ${id_employee}, key result ${data.id_key_result}:`,
+            updated,
+          );
+        } else {
+          const created = await this.prisma.assessmentEmployee.create({
+            data: {
+              id_employee: id_employee,
+              id_key_result: data.id_key_result,
+              type: data.type,
+              target: data.target,
+              realisasi: data.realisasi,
+              nilai_akhir: data.nilai_akhir,
+              date: new Date(date).toISOString(),
+              total_nilai: total_nilai,
+            },
+          });
+          console.log(
+            `Created assessment for employee ${id_employee}, key result ${data.id_key_result}:`,
+            created,
+          );
+        }
       }
+
       return {
         id_employee: id_employee,
+        date,
         assessment: assessmentData,
         total_nilai: parseFloat(total_nilai.toFixed(2)),
       };
     } catch (error) {
-      console.error('Error update penilaian karyawan:', error);
+      console.error('Error updating employee assessments:', error);
       throw new BadRequestException('Gagal mengedit penilaian karyawan');
     }
   }

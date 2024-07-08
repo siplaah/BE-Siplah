@@ -9,12 +9,17 @@ import {
   UseGuards,
   Req,
   BadRequestException,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as path from 'path';
 
 @UseGuards(AuthGuard)
 @Controller('overtime')
@@ -25,23 +30,35 @@ export class OvertimeController {
   ) {}
 
   @Post()
+  @UseInterceptors(
+    FileInterceptor('attachment', {
+      storage: diskStorage({
+        destination: (req, file, callback) => {
+          callback(null, './uploads');
+        },
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = path.extname(file.originalname);
+          const filename = `${uniqueSuffix}${ext}`;
+          callback(null, filename);
+        },
+      }),
+    }),
+  )
   async create(
     @Body() createOvertimeDto: CreateOvertimeDto,
+    @UploadedFile() file: Express.Multer.File,
     @Req() req,
-    
   ) {
     const id_employee = req.employee.id;
     if (!id_employee) {
       throw new BadRequestException('Employee ID is required');
     }
-    // const formattedData = {
-    //   ...createOvertimeDto,
-    //   start_date: new Date(createOvertimeDto.start_date),
-    //   end_date: new Date(createOvertimeDto.end_date),
-    // };
 
     const result = await this.overtimeService.create(
       createOvertimeDto,
+      file,
       id_employee,
     );
     return result;
