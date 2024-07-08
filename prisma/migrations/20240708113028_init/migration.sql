@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "Employee" ALTER COLUMN "alamat" DROP NOT NULL,
+ALTER COLUMN "keterangan" DROP NOT NULL,
+ALTER COLUMN "pendidikan" DROP NOT NULL,
+ALTER COLUMN "tempat_lahir" DROP NOT NULL,
+ALTER COLUMN "deskripsi" DROP NOT NULL,
+ALTER COLUMN "tanggal_lahir" DROP NOT NULL,
+ALTER COLUMN "start_working" DROP NOT NULL,
+ALTER COLUMN "gender" DROP NOT NULL;
