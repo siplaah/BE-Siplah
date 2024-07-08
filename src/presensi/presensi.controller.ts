@@ -50,13 +50,16 @@ export class PresensiController {
     }
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePresensiDto: UpdatePresensiDto) {
-  //   return this.presensiService.update(+id, updatePresensiDto);
-  // }
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updatePresensiDto: UpdatePresensiDto,
+  ) {
+    return this.presensiService.update({ id_presensi: +id }, updatePresensiDto);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.presensiService.remove(+id);
-  // }
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.presensiService.remove(+id);
+  }
 }
