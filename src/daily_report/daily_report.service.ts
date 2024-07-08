@@ -52,22 +52,33 @@ export class DailyReportService {
 
   async update(
     where: Prisma.DailyReportWhereUniqueInput,
-    data: Prisma.DailyReportUpdateInput,
+    updateDailyReportDto: UpdateDailyReportDto,
   ) {
     try {
-      const daily_report = await this.prisma.dailyReport.findUnique({
+      const updateDailyReport = await this.prisma.dailyReport.update({
         where,
+        data: {
+          date: updateDailyReportDto.date
+          ? new Date(updateDailyReportDto.date)
+            : undefined,
+          task: updateDailyReportDto.task,
+          status: updateDailyReportDto.status,
+          link: updateDailyReportDto.link,
+        }
       });
 
-      if (!daily_report) throw new Error('Data daily report tidak ditemukan');
-
-      const updated = await this.prisma.dailyReport.update({
-        where,
-        data,
-      });
-      return { message: 'Data daily report berhasil diedit', data: updated };
+      return {
+        message: 'daily report berhasil diupdate',
+        daily_report: updateDailyReport,
+      };
     } catch (error) {
-      throw new BadRequestException('Gagal mengedit data daily report');
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new BadRequestException('tidak dapat ditemukan');
+      }
+      throw error;
     }
   }
 

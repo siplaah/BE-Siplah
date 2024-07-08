@@ -27,11 +27,12 @@ model Employee {
   email              String
   password           String
   alamat             String
+  gender             JenisKelamin
   pendidikan         Pendidikan
   tanggal_lahir      DateTime
   tempat_lahir       String
   keterangan         Keterangan
-  deskripsi          StatusKaryawan @default(Aktif)
+  deskripsi          StatusKaryawan       @default(Aktif)
   start_working      DateTime
   cuti               Int?                 @default(12)
   createAt           DateTime             @default(now())
@@ -45,6 +46,11 @@ model Employee {
   time_off           TimeOff[]
   meetingEmployees   MeetingEmployee[]    @relation("EmployeeMeetings")
   assessmentEmployee AssessmentEmployee[]
+}
+
+enum JenisKelamin {
+  pria
+  wanita
 }
 
 enum Pendidikan {
