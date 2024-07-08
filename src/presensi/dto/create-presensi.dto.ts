@@ -6,11 +6,11 @@ export class CreatePresensiDto {
   date: Date;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsString()
   start_time: string;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsString()
   end_time: string;
 
 }

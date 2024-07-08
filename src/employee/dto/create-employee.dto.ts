@@ -1,4 +1,4 @@
-import { Jabatan, Keterangan, Pendidikan, StatusKaryawan} from '@prisma/client';
+import { Jabatan, JenisKelamin, Keterangan, Pendidikan, StatusKaryawan} from '@prisma/client';
 import { IsDate, IsEmail, IsEnum, IsString, IsDateString, IsNotEmpty, IsNumber} from 'class-validator';
 
 export class CreateEmployeeDto {
@@ -13,6 +13,9 @@ export class CreateEmployeeDto {
 
   @IsString()
   alamat: string;
+
+  @IsEnum(JenisKelamin, { message: 'Pendidikan tidak valid' })
+  gender: JenisKelamin;
 
   @IsEnum(Pendidikan, { message: 'Pendidikan tidak valid' })
   pendidikan: Pendidikan;

@@ -1,8 +1,9 @@
-import { Keterangan, Pendidikan, StatusKaryawan } from "@prisma/client";
+import { JenisKelamin, Keterangan, Pendidikan, StatusKaryawan } from "@prisma/client";
 
 export const employeeData = [
 {
     name: "Alice",
+    gender: JenisKelamin.wanita,
     id_jabatan: 1,
     email: "alice@example.com",
     password: "password123",
@@ -18,6 +19,7 @@ export const employeeData = [
 {
     name: "Bob",
     id_jabatan: 1,
+    gender: JenisKelamin.pria,
     email: "bob@example.com",
     password: "password123",
     alamat: "Jl. Melati No. 2",
@@ -31,9 +33,26 @@ export const employeeData = [
 },
 {
     name: "Charlie",
+    gender: JenisKelamin.wanita,
     id_jabatan: 3,
     email: "charlie@example.com",
     password: "password123",
+    alamat: "Jl. Anggrek No. 3",
+    pendidikan: Pendidikan.SMA,
+    tanggal_lahir: new Date("1980-03-03"),
+    tempat_lahir: "Surabaya",
+    keterangan: Keterangan.Probation,
+    deskripsi: StatusKaryawan.Aktif,
+    start_working: new Date("2015-03-01"),
+    cuti: 12,
+},
+
+{
+    name: "arila",
+    gender: JenisKelamin.wanita,
+    id_jabatan: 4,
+    email: "arila@gmail.com",
+    password: "12345",
     alamat: "Jl. Anggrek No. 3",
     pendidikan: Pendidikan.SMA,
     tanggal_lahir: new Date("1980-03-03"),
