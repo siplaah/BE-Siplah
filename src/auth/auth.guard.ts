@@ -20,9 +20,8 @@ export class AuthGuard implements CanActivate {
     try {
       const payload = await this.validateRequest(request);
       if (!payload) {
-        return false; // Return false if payload not found
+        return false;
       }
-      // console.log('Payload:', payload);
       request['employee'] = payload.employee;
       return true;
     } catch (error) {
