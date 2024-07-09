@@ -15,20 +15,35 @@ export class AuthGuard implements CanActivate {
     private readonly authService: AuthService,
   ) {}
 
+  // async canActivate(context: ExecutionContext): Promise<boolean> {
+  //   const request: Request = context.switchToHttp().getRequest();
+  //   try {
+  //     const payload = await this.validateRequest(request);
+  //     if (!payload) {
+  //       return false; // Return false if payload not found
+  //     }
+  //     // console.log('Payload:', payload);
+  //     request['employee'] = payload.employee;
+  //     return true;
+  //   } catch (error) {
+  //     throw new UnauthorizedException(error.message);
+  //   }
+  // }
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
     try {
       const payload = await this.validateRequest(request);
       if (!payload) {
-        return false; // Return false if payload not found
+        return false;
       }
-      // console.log('Payload:', payload);
+      console.log('Payload:', payload); // Tambahkan ini
       request['employee'] = payload.employee;
       return true;
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
-  }
+  }  
 
   async validateRequest(req: Request) {
     const header = req.headers['authorization'];
