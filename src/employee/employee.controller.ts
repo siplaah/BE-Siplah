@@ -18,7 +18,7 @@ import { ResponseEntity } from 'src/common/entity/response.entity';
 import { Req, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @Controller('employee')
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
@@ -63,6 +63,32 @@ export class EmployeeController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+// buka komen ini
+  // @Patch('profilesetting')
+  // async profileSetting(
+  //   @Req() req: Request & { employee: any },
+  //   @Body() updateEmployeeDto: UpdateEmployeeDto,
+  // ) {
+  //   console.log('req.employee:', req.employee); // Tambahkan ini
+  //   const { id } = req.employee;
+  //   console.log('id:', id); // Tambahkan ini
+  
+  //   const employeeId = parseInt(id, 10); // Konversi id menjadi integer
+  //   if (isNaN(employeeId)) {
+  //     throw new HttpException('Invalid employee id', HttpStatus.BAD_REQUEST);
+  //   }
+  
+  //   try {
+  //     const result = await this.employeeService.update(
+  //       { id_employee: employeeId },
+  //       updateEmployeeDto,
+  //     );
+  //     return result;
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
+  
 
   @Delete(':id')
   async remove(@Param('id') id: string) {

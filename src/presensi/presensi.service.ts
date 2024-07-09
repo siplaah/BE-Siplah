@@ -24,7 +24,7 @@ export class PresensiService {
           id_employee: id_employee,
           // date: date.toISOString(),
           start_time: createPresensiDto.start_time,
-          end_time: createPresensiDto.end_time,
+          // end_time: createPresensiDto.end_time,
         },
       });
       return tambahPresensi;
@@ -52,29 +52,30 @@ export class PresensiService {
     where: Prisma.PresensiWhereUniqueInput,
     updatePresensiDto: UpdatePresensiDto,
   ) {
+    const presensi = await this.prisma.presensi.findUnique({
+      where,
+    });
+
+    if (!presensi) {
+      throw new BadRequestException('Presensi tidak ditemukan');
+    }
+
+    if (updatePresensiDto.end_time && !presensi.start_time) {
+      throw new BadRequestException('Start time harus diisi sebelum end time');
+    }
+
     const updatePresensi = await this.prisma.presensi.update({
       where,
       data: {
-        // date: updatePresensiDto.date
-        //   ? new Date(updatePresensiDto.date)
-        //   : undefined,
         start_time: updatePresensiDto.start_time,
         end_time: updatePresensiDto.end_time,
       },
     });
+
     return {
       message: 'Presensi berhasil di update',
       presensi: updatePresensi,
     };
-  }
-  catch(error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2025'
-    ) {
-      throw new BadRequestException('Presensi tidak dapat ditemukan');
-    }
-    throw error;
   }
 
   async remove(id: number) {
