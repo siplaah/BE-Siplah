@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Jabatan, JenisKelamin, Keterangan, Pendidikan, StatusKaryawan} from '@prisma/client';
 import { IsDate, IsEmail, IsEnum, IsString, IsDateString, IsNotEmpty, IsNumber} from 'class-validator';
 

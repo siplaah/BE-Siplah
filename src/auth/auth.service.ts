@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { EmployeeService } from 'src/employee/employee.service';

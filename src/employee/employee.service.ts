@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Injectable,
@@ -57,6 +58,7 @@ export class EmployeeService {
     }
   }
 
+
   async findAll() {
     return await this.prisma.employee.findMany();
   }
@@ -71,40 +73,17 @@ export class EmployeeService {
     return employee;
   }
 
-  // async update(
-  //   where: Prisma.EmployeeWhereUniqueInput,
-  //   data: Prisma.EmployeeUpdateInput,
-  // ) {
-  //   console.log('where:', where); // Tambahkan log ini
-  //   try {
-  //     const employee = await this.prisma.employee.findUnique({
-  //       where,
-  //     });
-
-  //     if (!employee) throw new Error('Data karyawan tidak ditemukan');
-
-  //     const updated = await this.prisma.employee.update({
-  //       where,
-  //       data,
-  //     });
-  //     return { message: 'Data karyawan berhasil diedit', data: updated };
-  //   } catch (error) {
-  //     throw new BadRequestException(`Gagal mengedit data karyawan: ${error.message}`);
-  //   }
-  // }
-
   async update(
     where: Prisma.EmployeeWhereUniqueInput,
     data: Prisma.EmployeeUpdateInput,
   ) {
-    console.log('where:', where); // Tambahkan ini
     try {
       const employee = await this.prisma.employee.findUnique({
         where,
       });
-  
+
       if (!employee) throw new Error('Data karyawan tidak ditemukan');
-  
+
       const updated = await this.prisma.employee.update({
         where,
         data,
@@ -113,8 +92,30 @@ export class EmployeeService {
     } catch (error) {
       throw new BadRequestException(`Gagal mengedit data karyawan: ${error.message}`);
     }
-  }  
-  
+  }
+
+  async updateProfileWithToken(
+    id: number, 
+    updateEmployeeDto: Prisma.EmployeeUpdateInput
+  ) {
+    try {
+      const employee = await this.prisma.employee.findUnique({
+        where: { id_employee: id },
+      });
+
+      if (!employee) throw new NotFoundException('Data karyawan tidak ditemukan');
+
+      const updated = await this.prisma.employee.update({
+        where: { id_employee: id },
+        data: updateEmployeeDto,
+      });
+
+      return { message: 'Data karyawan berhasil diedit', data: updated };
+    } catch (error) {
+      throw new BadRequestException(`Gagal mengedit data karyawan: ${error.message}`);
+    }
+  }
+ 
   async remove(id: number) {
     try {
       const hapusEmployee = await this.prisma.employee.delete({
