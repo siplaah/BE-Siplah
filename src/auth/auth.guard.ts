@@ -23,29 +23,24 @@ export class AuthGuard implements CanActivate {
       if (!payload) {
         return false;
       }
-
       request['employee'] = payload.employee;
       return true;
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
   }  
-
   async validateRequest(req: Request) {
     const header = req.headers['authorization'];
     if (!header) {
       throw new UnauthorizedException('Authorization header is missing');
     }
-
     const token = header.split(' ')[1];
     if (!token) {
       throw new UnauthorizedException('Token is missing');
     }
-
     if (this.authService.isBlacklisted(token)) {
       throw new UnauthorizedException('Token is blacklisted');
     }
-
     const payload = await this.jwtService.verifyAsync(token);
     return payload;
   }
