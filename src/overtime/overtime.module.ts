@@ -4,12 +4,16 @@ import { OvertimeController } from './overtime.controller';
 import { PrismaService } from 'src/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
 import { EmployeeService } from 'src/employee/employee.service';
-import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { FileService } from '../file/file.service';
 
 @Module({
   controllers: [OvertimeController],
-  providers: [OvertimeService, PrismaService, AuthService, EmployeeService],
+  providers: [
+    OvertimeService,
+    PrismaService,
+    AuthService,
+    EmployeeService,
+    FileService,
+  ],
 })
 export class OvertimeModule {}

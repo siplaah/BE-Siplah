@@ -26,7 +26,7 @@ export class CreateOvertimeDto {
 
   @IsNotEmpty()
   @IsString()
-  attachment: string;
+  attachment: Buffer;
 
   @IsNotEmpty()
   @IsEnum(Status)

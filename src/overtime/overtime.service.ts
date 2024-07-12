@@ -3,16 +3,16 @@ import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
-// import * as moment from 'moment';
 
 @Injectable()
 export class OvertimeService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createOvertimeDto: CreateOvertimeDto, id_employee: number) {
-    if (!id_employee) {
-      throw new BadRequestException('Employee ID is required');
-    }
+  async create(
+    createOvertimeDto: CreateOvertimeDto,
+    file: Express.Multer.File | undefined,
+    id_employee: number,
+  ) {
     try {
       const startDate = new Date(createOvertimeDto.start_date);
       const endDate = new Date(createOvertimeDto.end_date);
@@ -21,18 +21,28 @@ export class OvertimeService {
         throw new BadRequestException('Invalid date format');
       }
 
+      let attachmentPath: string | null = null;
+      if (file) {
+        attachmentPath = file.path;
+      }
+
       const tambahOvertime = await this.prisma.overtimes.create({
         data: {
-          id_employee: id_employee,
+          employee: {
+            connect: {
+              id_employee: id_employee,
+            },
+          },
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           start_time: createOvertimeDto.start_time,
           end_time: createOvertimeDto.end_time,
-          attachment: createOvertimeDto.attachment,
           status: createOvertimeDto.status,
           description: createOvertimeDto.description,
+          attachment: attachmentPath,
         },
       });
+
       return tambahOvertime;
     } catch (error) {
       console.error('Error creating overtime:', error);
@@ -81,7 +91,7 @@ export class OvertimeService {
             : undefined,
           start_time: updateOvertimeDto.start_time,
           end_time: updateOvertimeDto.end_time,
-          attachment: updateOvertimeDto.attachment,
+          // attachment: updateOvertimeDto.attachment,
           status: 'pending',
           description: updateOvertimeDto.description,
         },
