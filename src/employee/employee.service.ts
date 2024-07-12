@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Injectable,
@@ -111,7 +112,11 @@ export class EmployeeService {
 
       return { message: 'Data karyawan berhasil diedit', data: updated };
     } catch (error) {
+
       throw new BadRequestException('Gagal mengedit data karyawan: ${error.message}');
+
+      throw new BadRequestException(`Gagal mengedit data karyawan: ${error.message}`);
+
     }
   }
  
