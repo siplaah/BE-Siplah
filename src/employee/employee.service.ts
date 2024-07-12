@@ -90,7 +90,7 @@ export class EmployeeService {
       });
       return { message: 'Data karyawan berhasil diedit', data: updated };
     } catch (error) {
-      throw new BadRequestException(`Gagal mengedit data karyawan: ${error.message}`);
+      throw new BadRequestException('Gagal mengedit data karyawan: ${error.message}');
     }
   }
 
@@ -112,7 +112,11 @@ export class EmployeeService {
 
       return { message: 'Data karyawan berhasil diedit', data: updated };
     } catch (error) {
+
+      throw new BadRequestException('Gagal mengedit data karyawan: ${error.message}');
+
       throw new BadRequestException(`Gagal mengedit data karyawan: ${error.message}`);
+
     }
   }
  
@@ -168,7 +172,7 @@ export class EmployeeService {
     });
     if (!jabatan) {
       throw new NotFoundException(
-        `Jabatan dengan ID ${id_jabatan} tidak ditemukan`,
+        'Jabatan dengan ID ${id_jabatan} tidak ditemukan',
       );
     }
     return jabatan.name_jabatan;
