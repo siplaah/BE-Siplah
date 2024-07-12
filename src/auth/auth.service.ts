@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { JwtService } from '@nestjs/jwt';
+import { Keterangan } from '@prisma/client';
 // import { JwtPayload } from './types/jwt-payload.type';
 
 @Injectable()
@@ -29,7 +30,15 @@ export class AuthService {
           id: employee.id_employee,
           name: employee.name,
           email: employee.email,
+          gender: employee.gender,
           jabatan: namaJabatan,
+          alamat: employee.alamat,
+          tempat_lahir: employee.tempat_lahir,
+          tanggl_lahir: employee.tanggal_lahir,
+          keterangan: employee.keterangan,
+          deskripsi: employee.deskripsi,
+          start_working: employee.start_working,
+          pendidikan: employee.pendidikan,
           cuti: employee.cuti,
         },
       });
@@ -39,7 +48,15 @@ export class AuthService {
           id: employee.id_employee,
           name: employee.name,
           email: employee.email,
+          gender: employee.gender,
           jabatan: namaJabatan,
+          alamat: employee.alamat,
+          tempat_lahir: employee.tempat_lahir,
+          tanggl_lahir: employee.tanggal_lahir,
+          keterangan: employee.keterangan,
+          deskripsi: employee.deskripsi,
+          start_working: employee.start_working,
+          pendidikan: employee.pendidikan,
           cuti: employee.cuti,
         },
       };

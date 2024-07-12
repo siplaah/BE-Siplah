@@ -63,32 +63,20 @@ export class EmployeeController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-// buka komen ini
-  // @Patch('profilesetting')
-  // async profileSetting(
-  //   @Req() req: Request & { employee: any },
-  //   @Body() updateEmployeeDto: UpdateEmployeeDto,
-  // ) {
-  //   console.log('req.employee:', req.employee); // Tambahkan ini
-  //   const { id } = req.employee;
-  //   console.log('id:', id); // Tambahkan ini
-  
-  //   const employeeId = parseInt(id, 10); // Konversi id menjadi integer
-  //   if (isNaN(employeeId)) {
-  //     throw new HttpException('Invalid employee id', HttpStatus.BAD_REQUEST);
-  //   }
-  
-  //   try {
-  //     const result = await this.employeeService.update(
-  //       { id_employee: employeeId },
-  //       updateEmployeeDto,
-  //     );
-  //     return result;
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
-  
+
+  @Post('profile/update')
+  async updateProfileWithToken(
+    @Req() req: Request & { employee: { id: number } },
+    @Body() updateEmployeeDto: Prisma.EmployeeUpdateInput
+  ) {
+    try {
+      const employeeId = req.employee.id;
+      const result = await this.employeeService.updateProfileWithToken(employeeId, updateEmployeeDto);
+      return result;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
