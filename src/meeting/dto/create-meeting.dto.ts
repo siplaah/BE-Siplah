@@ -1,4 +1,10 @@
-import { IsArray, IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 
 export class CreateMeetingDto {
   @IsNotEmpty()
@@ -25,4 +31,5 @@ export class CreateMeetingDto {
   @IsNotEmpty()
   @IsString()
   description: string;
+  meetingEmployees: any;
 }
