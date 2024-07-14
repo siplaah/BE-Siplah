@@ -75,11 +75,17 @@ export class OvertimeController {
   }
 
   @Put(':id')
-  async update(
+  @UseInterceptors(FileInterceptor('attachment'))
+  update(
     @Param('id') id: string,
     @Body() updateOvertimeDto: UpdateOvertimeDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.overtimeService.update({ id_overtime: +id }, updateOvertimeDto);
+    return this.overtimeService.update(
+      { id_overtime: +id },
+      updateOvertimeDto,
+      file,
+    );
   }
 
   @Delete(':id')
@@ -95,5 +101,18 @@ export class OvertimeController {
   @Put(':id/reject')
   reject(@Param('id') id: string, @Body('description') description: string) {
     return this.overtimeService.reject(+id, description);
+  }
+
+  @Get(':id/attachment')
+  async getAttachment(@Param('id') id: string) {
+    const id_overtime = parseInt(id, 10);
+
+    if (isNaN(id_overtime)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    console.log('Controller: getAttachment called with:', id_overtime);
+
+    return this.overtimeService.findOne({ id_overtime });
   }
 }

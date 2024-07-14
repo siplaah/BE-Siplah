@@ -3,6 +3,8 @@ import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class OvertimeService {
@@ -20,10 +22,11 @@ export class OvertimeService {
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
         throw new BadRequestException('Invalid date format');
       }
-
       let attachmentPath: string | null = null;
       if (file) {
-        attachmentPath = file.path;
+        const { path: filePath, originalname } = file;
+        attachmentPath = `uploads/${Date.now()}-${originalname}`;
+        fs.renameSync(filePath, attachmentPath);
       }
 
       const tambahOvertime = await this.prisma.overtimes.create({
@@ -55,49 +58,66 @@ export class OvertimeService {
   }
 
   async findOne(getOvertimebyId: Prisma.OvertimesWhereUniqueInput) {
-    const getOvertime = await this.prisma.overtimes.findUnique({
-      where: getOvertimebyId,
-    });
+    console.log('findOne called with:', getOvertimebyId);
 
-    if (!getOvertime) {
-      throw new BadRequestException('data tidak ditemukan');
+    try {
+      const getOvertime = await this.prisma.overtimes.findUnique({
+        where: getOvertimebyId,
+      });
+
+      if (!getOvertime) {
+        throw new Error('Overtime not found');
+      }
+
+      return getOvertime;
+    } catch (error) {
+      throw new Error(`Error retrieving overtime: ${error.message}`);
     }
-
-    return getOvertime;
   }
 
   async update(
     where: Prisma.OvertimesWhereUniqueInput,
     updateOvertimeDto: UpdateOvertimeDto,
+    file: Express.Multer.File | undefined,
   ) {
     try {
-      if (
-        updateOvertimeDto.status === 'rejected' &&
-        !updateOvertimeDto.description
-      ) {
-        throw new BadRequestException(
-          'Deskripsi alasan penolakan harus disertakan',
-        );
+      const existingOvertime = await this.prisma.overtimes.findUnique({
+        where,
+      });
+
+      if (!existingOvertime) {
+        console.error('Overtime request not found:', where);
+        throw new BadRequestException('Pengajuan tidak dapat ditemukan');
       }
+
+      // Handle attachment path
+      let attachmentPath: string | null = null;
+      if (file && file.path) {
+        // Check if file and file.path are defined
+        attachmentPath = path.basename(file.path); // Extract the filename
+      }
+
+      const updateData: Prisma.OvertimesUpdateInput = {
+        start_date: updateOvertimeDto.start_date
+          ? new Date(updateOvertimeDto.start_date).toISOString()
+          : undefined,
+        end_date: updateOvertimeDto.end_date
+          ? new Date(updateOvertimeDto.end_date).toISOString()
+          : undefined,
+        start_time: updateOvertimeDto.start_time,
+        end_time: updateOvertimeDto.end_time,
+        status: 'pending',
+        description: updateOvertimeDto.description,
+        attachment: attachmentPath || undefined, // Ensure attachment is either a valid path or undefined
+      };
 
       const updateOvertime = await this.prisma.overtimes.update({
         where,
-        data: {
-          start_date: updateOvertimeDto.start_date
-            ? new Date(updateOvertimeDto.start_date)
-            : undefined,
-          end_date: updateOvertimeDto.end_date
-            ? new Date(updateOvertimeDto.end_date)
-            : undefined,
-          start_time: updateOvertimeDto.start_time,
-          end_time: updateOvertimeDto.end_time,
-          // attachment: updateOvertimeDto.attachment,
-          status: 'pending',
-          description: updateOvertimeDto.description,
-        },
+        data: updateData,
       });
+
       return {
-        message: 'Pengajuan berhasil di update',
+        message: 'Pengajuan berhasil diupdate',
         overtime: updateOvertime,
       };
     } catch (error) {

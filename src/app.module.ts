@@ -32,12 +32,12 @@ import { MailerOptions } from '@nestjs-modules/mailer';
       transport: {
         service: 'gmail',
         auth: {
-          user: 'ajengwahyu@gmail.com', // Ganti dengan email Gmail Anda
-          pass: 'zmtr aodl gdog wqzs', // Ganti dengan password Gmail Anda atau app-specific password
+          user: 'aaawp94@gmail.com',
+          pass: 'fwcj tgwb jnvm pgde',
         },
       },
       defaults: {
-        from: '"No Reply" <noreply@example.com>', // Ganti dengan alamat email pengirim default
+        from: '"No Reply" <noreply@example.com>',
       },
     } as MailerOptions),
   ],
