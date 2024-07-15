@@ -29,11 +29,11 @@ model Employee {
   alamat             String?
   gender             JenisKelamin?
   pendidikan         Pendidikan?
-  tanggal_lahir      DateTime?
+  tanggal_lahir      String?
   tempat_lahir       String?
   keterangan         Keterangan?
   deskripsi          StatusKaryawan?       @default(Aktif)
-  start_working      DateTime?
+  start_working      String?
   cuti               Int?                 @default(12)
   createAt           DateTime             @default(now())
   updateAt           DateTime             @updatedAt

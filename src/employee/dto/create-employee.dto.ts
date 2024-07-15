@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Jabatan, JenisKelamin, Keterangan, Pendidikan, StatusKaryawan} from '@prisma/client';
-import { IsDate, IsEmail, IsEnum, IsString, IsDateString, IsNotEmpty, IsNumber} from 'class-validator';
+import { IsDate, IsEmail, IsEnum, IsString, IsDateString, IsNotEmpty, IsNumber, IsOptional} from 'class-validator';
 
 export class CreateEmployeeDto {
   @IsString()
@@ -12,30 +12,35 @@ export class CreateEmployeeDto {
   @IsString()
   password: string;
 
+  @IsOptional()
   @IsString()
   alamat: string;
 
+  @IsOptional()
   @IsEnum(JenisKelamin, { message: 'Jenis Kelamin tidak valid' })
   gender: JenisKelamin;
 
+  @IsOptional()
   @IsEnum(Pendidikan, { message: 'Pendidikan tidak valid' })
   pendidikan: Pendidikan;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  tanggal_lahir: Date;
+  tanggal_lahir: string;
 
+  @IsOptional()
   @IsString()
   tempat_lahir: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  start_working: Date;
+  start_working: string;
 
+  @IsOptional()
   @IsEnum(Keterangan, { message: 'Keterangan tidak valid' })
   keterangan: Keterangan;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(StatusKaryawan)
   deskripsi: StatusKaryawan;
 
