@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -41,7 +42,6 @@ export class AuthController {
     }
   }
 
-  @UseGuards(AuthGuard)
   @Get('me')
   public async me(@Req() req: Request & { employee: JwtPayload }) {
     return req.employee;
