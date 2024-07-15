@@ -13,49 +13,103 @@ import { Prisma } from '@prisma/client';
 export class EmployeeService {
   constructor(private prisma: PrismaService) {}
 
+  private parseDate(dateString: string): Date | null {
+    const [day, month, year] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  
   async create(createEmployee: Prisma.EmployeeCreateInput) {
     try {
-        const hashedPassword = hashSync(createEmployee.password, 10);
-        let tanggalLahir = null;
-        if (createEmployee.tanggal_lahir) {
-            tanggalLahir = new Date(createEmployee.tanggal_lahir);
-            if (isNaN(tanggalLahir.getTime())) {
-                throw new BadRequestException('Invalid date format for tanggal_lahir');
-            }
+      const hashedPassword = hashSync(createEmployee.password, 10);
+      let tanggalLahir: string | null = null;
+      if (createEmployee.tanggal_lahir) {
+        const parsedDate = this.parseDate(createEmployee.tanggal_lahir);
+        if (!parsedDate) {
+          throw new BadRequestException('Invalid date format for tanggal_lahir');
         }
-        let startWorking = null;
-        if (createEmployee.start_working) {
-            startWorking = new Date(createEmployee.start_working);
-            if (isNaN(startWorking.getTime())) {
-                throw new BadRequestException('Invalid date format for start_working');
-            }
+        tanggalLahir = parsedDate.toISOString();
+      }
+      let startWorking: string | null = null;
+      if (createEmployee.start_working) {
+        const parsedDate = this.parseDate(createEmployee.start_working);
+        if (!parsedDate) {
+          throw new BadRequestException('Invalid date format for start_working');
         }
-        const employeeData = {
-            ...createEmployee,
-            password: hashedPassword,
-            tanggal_lahir: tanggalLahir ? tanggalLahir.toISOString() : null,
-            start_working: startWorking ? startWorking.toISOString() : null,
-        };
-        const exist = await this.prisma.employee.findFirst({
-            where: {
-                email: createEmployee.email,
-            },
-        });
-        if (exist) {
-            throw new BadRequestException('Email sudah terdaftar');
-        }
-        const employee = await this.prisma.employee.create({
-            data: employeeData,
-        });
-        return { message: 'Data karyawan berhasil ditambahkan', data: employee };
+        startWorking = parsedDate.toISOString();
+      }
+      const employeeData = {
+        ...createEmployee,
+        password: hashedPassword,
+        tanggal_lahir: tanggalLahir,
+        start_working: startWorking,
+      };
+      const exist = await this.prisma.employee.findFirst({
+        where: {
+          email: createEmployee.email,
+        },
+      });
+      if (exist) {
+        throw new BadRequestException('Email sudah terdaftar');
+      }
+      const employee = await this.prisma.employee.create({
+        data: employeeData,
+      });
+      return { message: 'Data karyawan berhasil ditambahkan', data: employee };
     } catch (error) {
-        console.log(error);
-        if (error instanceof BadRequestException) {
-            throw error;
-        }
-        throw new BadRequestException('Gagal menambahkan data karyawan: ${error.message}');
+      console.log(error);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Gagal menambahkan data karyawan: ${error.message}`);
     }
   }
+
+  // async create(createEmployee: CreateEmployeeDto) {
+  //   try {
+  //     const hashedPassword = hashSync(createEmployee.password, 10);
+  //     let tanggalLahir: string | null = null;
+  //     if (createEmployee.tanggal_lahir) {
+  //       const parsedDate = this.parseDate(createEmployee.tanggal_lahir);
+  //       if (!parsedDate) {
+  //         throw new BadRequestException('Invalid date format for tanggal_lahir');
+  //       }
+  //       tanggalLahir = parsedDate.toISOString();
+  //     }
+  //     let startWorking: string | null = null;
+  //     if (createEmployee.start_working) {
+  //       const parsedDate = this.parseDate(createEmployee.start_working);
+  //       if (!parsedDate) {
+  //         throw new BadRequestException('Invalid date format for start_working');
+  //       }
+  //       startWorking = parsedDate.toISOString();
+  //     }
+  //     const employeeData = {
+  //       ...createEmployee,
+  //       password: hashedPassword,
+  //       tanggal_lahir: tanggalLahir,
+  //       start_working: startWorking,
+  //     };
+  //     const exist = await this.prisma.employee.findFirst({
+  //       where: {
+  //         email: createEmployee.email,
+  //       },
+  //     });
+  //     if (exist) {
+  //       throw new BadRequestException('Email sudah terdaftar');
+  //     }
+  //     const employee = await this.prisma.employee.create({
+  //       data: employeeData,
+  //     });
+  //     return { message: 'Data karyawan berhasil ditambahkan', data: employee };
+  //   } catch (error) {
+  //     console.log(error);
+  //     if (error instanceof BadRequestException) {
+  //       throw error;
+  //     }
+  //     throw new BadRequestException(`Gagal menambahkan data karyawan: ${error.message}`);
+  //   }
+  // }
 
 
   async findAll() {
@@ -93,8 +147,31 @@ export class EmployeeService {
     }
   }
 
+  // async updateProfileWithToken(
+  //   id: number, 
+  //   updateEmployeeDto: Prisma.EmployeeUpdateInput
+  // ) {
+  //   try {
+  //     const employee = await this.prisma.employee.findUnique({
+  //       where: { id_employee: id },
+  //     });
+
+  //     if (!employee) throw new NotFoundException('Data karyawan tidak ditemukan');
+
+  //     const updated = await this.prisma.employee.update({
+  //       where: { id_employee: id },
+  //       data: updateEmployeeDto,
+  //     });
+
+  //     return { message: 'Data karyawan berhasil diedit', data: updated };
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw new BadRequestException('Gagal mengedit data karyawan: ${error.message}');
+  //   }
+  // }
+
   async updateProfileWithToken(
-    id: number, 
+    id: number,
     updateEmployeeDto: Prisma.EmployeeUpdateInput
   ) {
     try {
@@ -104,6 +181,13 @@ export class EmployeeService {
 
       if (!employee) throw new NotFoundException('Data karyawan tidak ditemukan');
 
+      // Check if updateEmployeeDto.password is a string and hash it
+      if (typeof updateEmployeeDto.password === 'string') {
+        updateEmployeeDto.password = hashSync(updateEmployeeDto.password, 10);
+      } else if (updateEmployeeDto.password instanceof Object) {
+        // Handle if password is an object (e.g., update operations)
+      }
+
       const updated = await this.prisma.employee.update({
         where: { id_employee: id },
         data: updateEmployeeDto,
@@ -111,9 +195,12 @@ export class EmployeeService {
 
       return { message: 'Data karyawan berhasil diedit', data: updated };
     } catch (error) {
-      throw new BadRequestException('Gagal mengedit data karyawan: ${error.message}');
+      console.log(error);
+      throw new BadRequestException(`Gagal mengedit data karyawan: ${error.message}`);
     }
   }
+
+  
  
   async remove(id: number) {
     try {

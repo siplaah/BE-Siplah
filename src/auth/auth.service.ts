@@ -2,8 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { EmployeeService } from 'src/employee/employee.service';
 import { JwtService } from '@nestjs/jwt';
-import { Keterangan } from '@prisma/client';
-// import { JwtPayload } from './types/jwt-payload.type';
+import { Employee } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -16,10 +15,9 @@ export class AuthService {
 
   async signIn(signInDto: SignInDto) {
     try {
-      const employee = await this.employeeService.verifyPassword(
-        signInDto.email,
-        signInDto.password,
-      );
+      const { email, password } = signInDto;
+
+      const employee = await this.verifyPassword(email, password);
 
       const namaJabatan = await this.employeeService.getNamaJabatanById(
         employee.id_jabatan,
@@ -30,11 +28,11 @@ export class AuthService {
           id: employee.id_employee,
           name: employee.name,
           email: employee.email,
+          jabatan: employee.id_jabatan,
           gender: employee.gender,
-          jabatan: namaJabatan,
           alamat: employee.alamat,
           tempat_lahir: employee.tempat_lahir,
-          tanggl_lahir: employee.tanggal_lahir,
+          tanggal_lahir: employee.tanggal_lahir,
           keterangan: employee.keterangan,
           deskripsi: employee.deskripsi,
           start_working: employee.start_working,
@@ -42,6 +40,7 @@ export class AuthService {
           cuti: employee.cuti,
         },
       });
+
       return {
         accessToken,
         employee: {
@@ -52,7 +51,7 @@ export class AuthService {
           jabatan: namaJabatan,
           alamat: employee.alamat,
           tempat_lahir: employee.tempat_lahir,
-          tanggl_lahir: employee.tanggal_lahir,
+          tanggal_lahir: employee.tanggal_lahir,
           keterangan: employee.keterangan,
           deskripsi: employee.deskripsi,
           start_working: employee.start_working,
@@ -71,5 +70,13 @@ export class AuthService {
 
   isBlacklisted(token: string): boolean {
     return this.blacklist.has(token);
+  }
+
+  async verifyPassword(email: string, password: string): Promise<Employee> {
+    try {
+      return await this.employeeService.verifyPassword(email, password);
+    } catch (error) {
+      throw new UnauthorizedException('Email atau password salah');
+    }
   }
 }
