@@ -125,10 +125,65 @@ export class MeetingService {
     }
   }
 
-  findAll() {
-    return this.prisma.meeting.findMany({
+  async findAll(params: {
+    page: number;
+    pageSize: number;
+    q?: string;
+    date?: string;
+  }) {
+    const { page, pageSize, q, date } = params;
+
+    const where: Prisma.MeetingWhereInput = {};
+
+    if (q) {
+      where.OR = [
+        {
+          description: {
+            contains: q,
+          },
+        },
+        {
+          meetingEmployees: {
+            some: {
+              employee: {
+                name: {
+                  contains: q,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+        },
+      ];
+    }
+
+    if (date) {
+      const startDate = new Date(date);
+      const endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + 1);
+
+      where.date = {
+        gte: startDate.toISOString(),
+        lt: endDate.toISOString(),
+      };
+    }
+
+    const totalData = await this.prisma.meeting.count({ where });
+
+    const meeting = await this.prisma.meeting.findMany({
       include: { meetingEmployees: true },
+      where,
+      orderBy: {
+        date: 'desc',
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
+
+    return {
+      data: meeting,
+      totalData: totalData,
+    };
   }
 
   async findOne(getMeetingbyId: Prisma.MeetingWhereUniqueInput) {

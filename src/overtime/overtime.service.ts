@@ -53,8 +53,66 @@ export class OvertimeService {
     }
   }
 
-  findAll() {
-    return this.prisma.overtimes.findMany();
+  async findAll(params: {
+    page: number;
+    pageSize: number;
+    q?: string;
+    date?: string;
+    id_employee?: number;
+  }) {
+    const { page, pageSize, q, date, id_employee } = params;
+
+    const where: any = {};
+
+    if (q) {
+      where.employee = {
+        name: {
+          contains: q,
+          mode: 'insensitive',
+        },
+      };
+    }
+
+    if (date) {
+      const startDate = new Date(date);
+      const endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + 1);
+
+      where.start_date = {
+        gte: startDate.toISOString(),
+        lt: endDate.toISOString(),
+      };
+    }
+
+    if (id_employee) {
+      where.id_employee = Number(id_employee);
+    }
+
+    const totalData = await this.prisma.overtimes.count({ where });
+
+    const overtimes = await this.prisma.overtimes.findMany({
+      where,
+      orderBy: {
+        start_date: 'desc',
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    const sortedOvertimes = overtimes.sort((a, b) => {
+      const statusOrder = {
+        rejected: 1,
+        pending: 2,
+        approved: 3,
+      };
+
+      return statusOrder[a.status] - statusOrder[b.status];
+    });
+
+    return {
+      data: sortedOvertimes,
+      totalData: totalData,
+    };
   }
 
   async findOne(getOvertimebyId: Prisma.OvertimesWhereUniqueInput) {
@@ -90,11 +148,9 @@ export class OvertimeService {
         throw new BadRequestException('Pengajuan tidak dapat ditemukan');
       }
 
-      // Handle attachment path
       let attachmentPath: string | null = null;
       if (file && file.path) {
-        // Check if file and file.path are defined
-        attachmentPath = path.basename(file.path); // Extract the filename
+        attachmentPath = path.basename(file.path);
       }
 
       const updateData: Prisma.OvertimesUpdateInput = {
@@ -108,7 +164,7 @@ export class OvertimeService {
         end_time: updateOvertimeDto.end_time,
         status: 'pending',
         description: updateOvertimeDto.description,
-        attachment: attachmentPath || undefined, // Ensure attachment is either a valid path or undefined
+        attachment: attachmentPath || undefined,
       };
 
       const updateOvertime = await this.prisma.overtimes.update({

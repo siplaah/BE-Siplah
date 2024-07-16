@@ -11,6 +11,7 @@ import {
   BadRequestException,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
@@ -65,8 +66,28 @@ export class OvertimeController {
   }
 
   @Get()
-  findAll() {
-    return this.overtimeService.findAll();
+  findAll(
+    @Query()
+    query: {
+      page: number;
+      pageSize: number;
+      q?: string;
+      date?: string;
+      id_employee?: number;
+    },
+  ) {
+    const page = parseInt(query.page as any) || 1;
+    const pageSize = parseInt(query.pageSize as any) || 10;
+    const q = query.q || '';
+    const date = query.date;
+    const id_employee = query.id_employee;
+    return this.overtimeService.findAll({
+      page,
+      pageSize,
+      q,
+      date,
+      id_employee,
+    });
   }
 
   @Get(':id')
