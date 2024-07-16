@@ -14,17 +14,17 @@ export class PresensiService {
       throw new BadRequestException('Employee ID is required');
     }
     try {
-      // const date = new Date(createPresensiDto.date);      
-      // if (isNaN(date.getTime())) {
-      //   throw new BadRequestException('Invalid date format');
-      // }
+      const date = new Date(createPresensiDto.date);      
+      if (isNaN(date.getTime())) {
+        throw new BadRequestException('Invalid date format');
+      }
 
       const tambahPresensi = await this.prisma.presensi.create({
         data: {
           id_employee: id_employee,
-          // date: date.toISOString(),
+          date: date.toISOString(),
           start_time: createPresensiDto.start_time,
-          // end_time: createPresensiDto.end_time,
+          end_time: createPresensiDto.end_time,
         },
       });
       return tambahPresensi;

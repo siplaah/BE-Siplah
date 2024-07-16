@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateAssessmentDto } from './dto/create-assessment.dto';
 import { UpdateAssessmentDto } from './dto/update-assessment.dto';
 import { PrismaService } from 'src/prisma.service';
-import { typeAssessment } from '@prisma/client';
+import { Prisma, typeAssessment } from '@prisma/client';
 
 @Injectable()
 export class AssessmentService {
@@ -15,9 +15,9 @@ export class AssessmentService {
   ): number {
     switch (type) {
       case typeAssessment.should_increase_to:
-        return Number(((realisasi / target) * 100).toFixed(2));
+        return Math.round((realisasi / target) * 100);
       case typeAssessment.shoud_decrease_to:
-        return Number(((target / realisasi) * 100).toFixed(2));
+        return Math.round((target / realisasi) * 100);
       case typeAssessment.should_stay_above:
         return realisasi > target ? 100 : 0;
       case typeAssessment.shoud_stay_below:
@@ -66,15 +66,16 @@ export class AssessmentService {
             type: item.type,
             target: keyResult.target,
             realisasi: item.realisasi,
-            nilai_akhir: parseFloat(nilai_akhir.toFixed(2)),
+            nilai_akhir: nilai_akhir,
             total_nilai: 0,
           };
         }),
       );
 
-      const total_nilai =
+      const total_nilai = Math.round(
         assessmentData.reduce((total, item) => total + item.nilai_akhir, 0) /
-        assessmentData.length;
+          assessmentData.length,
+      );
       assessmentData.forEach((data) => {
         data.total_nilai = total_nilai;
       });
@@ -87,7 +88,7 @@ export class AssessmentService {
         id_employee,
         date,
         assessment: assessmentData,
-        total_nilai: parseFloat(total_nilai.toFixed(2)),
+        total_nilai: total_nilai,
       };
     } catch (error) {
       console.error('Error create penilaian karyawan:', error);
@@ -96,20 +97,19 @@ export class AssessmentService {
   }
 
   async findAll(params: {
-    page: number;
-    pageSize: number;
+    page?: number;
+    pageSize?: number;
     q?: string;
     date?: string;
   }) {
-    const { page, pageSize, q, date } = params;
-
-    const where: any = {};
+    const { q, date } = params;
+    const where: Prisma.AssessmentEmployeeWhereInput = {};
 
     if (q) {
       where.employee = {
         name: {
           contains: q,
-          mode: 'insensitive', // Agar pencarian tidak case-sensitive
+          mode: 'insensitive',
         },
       };
     }
@@ -125,73 +125,71 @@ export class AssessmentService {
       };
     }
 
-    try {
-      const assessments = await this.prisma.assessmentEmployee.findMany({
-        where,
-        include: {
-          keyResult: true,
-          employee: true,
-        },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
+    console.log('Where clause:', where);
 
-      // Group assessments by employee
-      const groupByEmployee = assessments.reduce((result, assessment) => {
-        const {
-          id_employee,
-          employee,
-          date,
-          id_key_result,
-          type,
-          target,
-          realisasi,
-          nilai_akhir,
-          total_nilai,
-        } = assessment;
+    const assessments = await this.prisma.assessmentEmployee.findMany({
+      where,
+      include: {
+        employee: true,
+      },
+      // skip: (page - 1) * pageSize,
+      // take: pageSize,
+    });
 
-        if (!result[id_employee]) {
-          result[id_employee] = {
+    // console.log('Assessments retrieved:', assessments);
+
+    const transformedAssessments = assessments.map((assessment) => ({
+      id_key_result: assessment.id_key_result,
+      type: assessment.type,
+      target: assessment.target,
+      realisasi: assessment.realisasi,
+      nilai_akhir: assessment.nilai_akhir,
+      employee: {
+        id_employee: assessment.employee.id_employee,
+        nama: assessment.employee.name,
+      },
+      total_nilai: assessment.total_nilai,
+      date: assessment.date,
+    }));
+
+    const groupedAssessments = transformedAssessments.reduce(
+      (result, assessment) => {
+        if (!result[assessment.employee.id_employee]) {
+          result[assessment.employee.id_employee] = {
             employee: {
-              id_employee: employee.id_employee,
-              nama: employee.name,
+              id_employee: assessment.employee.id_employee,
+              nama: assessment.employee.nama,
             },
-            date: date,
+            date: assessment.date,
             assessment: [],
-            total_nilai: parseFloat(total_nilai.toFixed(2)),
+            total_nilai: assessment.total_nilai,
           };
         }
-
-        result[id_employee].assessment.push({
-          id_key_result,
-          type,
-          target,
-          realisasi,
-          nilai_akhir,
+        result[assessment.employee.id_employee].assessment.push({
+          id_key_result: assessment.id_key_result,
+          type: assessment.type,
+          target: assessment.target,
+          realisasi: assessment.realisasi,
+          nilai_akhir: assessment.nilai_akhir,
         });
-
         return result;
-      }, {});
+      },
+      {},
+    );
 
-      // Convert grouped data to array
-      let groupedData = Object.values(groupByEmployee);
+    const result = Object.values(groupedAssessments);
 
-      // Sort grouped data by date descending
-      groupedData = groupedData.sort(
-        (a: any, b: any) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime(),
-      );
+    const groupedData = result.sort(
+      (a: any, b: any) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
 
-      const totalData = groupedData.length;
+    const totalData = groupedData.length;
 
-      return {
-        data: groupedData,
-        totalData,
-      };
-    } catch (error) {
-      console.error('Error fetching assessments:', error);
-      throw new Error('Failed to fetch assessments');
-    }
+    return {
+      data: groupedData,
+      totalData,
+    };
   }
 
   async findOne(id_employee: number) {
@@ -213,13 +211,13 @@ export class AssessmentService {
       type: assessment.type,
       target: assessment.target,
       realisasi: assessment.realisasi,
-      nilai_akhir: parseFloat(assessment.nilai_akhir.toFixed(2)),
+      nilai_akhir: assessment.nilai_akhir,
     }));
 
-    const total_nilai = (
+    const total_nilai = Math.round(
       formattedAssessment.reduce((total, item) => total + item.nilai_akhir, 0) /
-      formattedAssessment.length
-    ).toFixed(2);
+        formattedAssessment.length,
+    );
 
     return {
       employee: {
@@ -227,7 +225,7 @@ export class AssessmentService {
         nama: employee.name,
       },
       assessment: formattedAssessment,
-      total_nilai: parseFloat(total_nilai),
+      total_nilai: total_nilai,
     };
   }
 
@@ -259,9 +257,10 @@ export class AssessmentService {
         }),
       );
 
-      const total_nilai =
+      const total_nilai = Math.round(
         assessmentData.reduce((total, item) => total + item.nilai_akhir, 0) /
-        assessmentData.length;
+          assessmentData.length,
+      );
 
       for (const data of assessmentData) {
         const existingRecord = await this.prisma.assessmentEmployee.findFirst({
@@ -313,7 +312,7 @@ export class AssessmentService {
         id_employee: id_employee,
         date,
         assessment: assessmentData,
-        total_nilai: parseFloat(total_nilai.toFixed(2)),
+        total_nilai: total_nilai,
       };
     } catch (error) {
       console.error('Error updating employee assessments:', error);
