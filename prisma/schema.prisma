@@ -32,7 +32,7 @@ model Employee {
   tanggal_lahir      String?
   tempat_lahir       String?
   keterangan         Keterangan?
-  deskripsi          StatusKaryawan?       @default(Aktif)
+  deskripsi          StatusKaryawan?      @default(Aktif)
   start_working      String?
   cuti               Int?                 @default(12)
   createAt           DateTime             @default(now())
@@ -140,6 +140,8 @@ model Presensi {
   date        DateTime  @default(now()) @map(name: "date")
   start_time  String
   end_time    String?
+  latitude    String?
+  longitude   String?
   created_at  DateTime  @default(now())
   update_at   DateTime  @updatedAt
 }
