@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Put,
+  Query,
 } from '@nestjs/common';
 import { MeetingService } from './meeting.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
@@ -25,8 +26,20 @@ export class MeetingController {
   }
 
   @Get()
-  findAll() {
-    return this.meetingService.findAll();
+  findAll(
+    @Query()
+    query: {
+      page: number;
+      pageSize: number;
+      q?: string;
+      date?: string;
+    },
+  ) {
+    const page = parseInt(query.page as any) || 1;
+    const pageSize = parseInt(query.pageSize as any) || 10;
+    const q = query.q || '';
+    const date = query.date;
+    return this.meetingService.findAll({ page, pageSize, q, date });
   }
 
   @Get(':id')
