@@ -134,9 +134,9 @@ export class TimeOffService {
     });
 
     const showTotalCuti = await Promise.all(
-      sortedtimeOff.map(async (overtime) => {
+      sortedtimeOff.map(async (timeOff) => {
         const employee = await this.prisma.employee.findUnique({
-          where: { id_employee: overtime.id_employee },
+          where: { id_employee: timeOff.id_employee },
           select: { cuti: true },
         });
         return {
@@ -343,5 +343,30 @@ export class TimeOffService {
     }
 
     return employee;
+  }
+
+  async findTimeOffbyWeek() {
+    try {
+      const today = new Date();
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+
+      const timeOff = await this.prisma.timeOff.findMany({
+        where: {
+          start_date: {
+            gte: today,
+            lt: nextWeek,
+          },
+        },
+        orderBy: {
+          start_date: 'asc',
+        },
+      });
+
+      return timeOff;
+    } catch (error) {
+      console.error('Error fetching next 7 days off:', error);
+      throw new BadRequestException('Gagal mengambil data cuti');
+    }
   }
 }
