@@ -127,4 +127,9 @@ export class TimeOffController {
 
     return this.timeOffService.findOne({ id_time_off });
   }
+
+  @Get('timeOffWeek')
+  async findTimeOffbyWeek() {
+    return this.timeOffService.findTimeOffbyWeek();
+  }
 }
