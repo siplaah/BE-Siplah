@@ -53,20 +53,4 @@ export class UpdateEmployeeDto extends PartialType(CreateEmployeeDto) {
   @IsNumber()
   id_jabatan: Jabatan;
 
-import { Jabatan, JenisKelamin, Keterangan, Pendidikan, StatusKaryawan } from '@prisma/client';
-
-export class UpdateEmployeeDto extends PartialType(CreateEmployeeDto) {
-    name?: string;
-    email?: string;
-    alamat?: string;
-    gender?: JenisKelamin;
-    pendidikan?: Pendidikan;
-    tanggal_lahir?: Date;
-    tempat_lahir?: string;
-    keterangan?: Keterangan;
-    deskripsi?: StatusKaryawan;
-    start_working?: Date;
-    cuti?: number;
-    id_jabatan?: Jabatan;
-
 }

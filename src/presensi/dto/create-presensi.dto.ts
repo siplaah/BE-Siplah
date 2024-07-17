@@ -14,6 +14,14 @@ export class CreatePresensiDto {
   @IsString()
   end_time: string;
 
+  @IsOptional()
+  @IsString()
+  latitude: string;
+
+  @IsOptional()
+  @IsString()
+  longitude: string;
+
   // @Transform(({ value }) => new Date(value))
   // date: Date;
 

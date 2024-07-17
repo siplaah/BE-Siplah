@@ -22,9 +22,15 @@ export class PresensiService {
       const tambahPresensi = await this.prisma.presensi.create({
         data: {
           id_employee: id_employee,
+
+          start_time: createPresensiDto.start_time,
+          latitude: createPresensiDto.latitude,
+          longitude: createPresensiDto.longitude,
+
           date: date.toISOString(),
           start_time: createPresensiDto.start_time,
           end_time: createPresensiDto.end_time,
+
         },
       });
       return tambahPresensi;
