@@ -3,18 +3,31 @@ import { CreateTimeOffDto } from './dto/create-time_off.dto';
 import { UpdateTimeOffDto } from './dto/update-time_off.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma, Status } from '@prisma/client';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class TimeOffService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createTimeOffDto: CreateTimeOffDto, id_employee: number) {
+  async create(
+    createTimeOffDto: CreateTimeOffDto,
+    file: Express.Multer.File | undefined,
+    id_employee: number,
+  ) {
     try {
       const startDate = new Date(createTimeOffDto.start_date);
       const endDate = new Date(createTimeOffDto.end_date);
 
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
         throw new BadRequestException('Invalid date format');
+      }
+
+      let attachmentPath: string | null = null;
+      if (file) {
+        const { path: filePath, originalname } = file;
+        attachmentPath = `uploads/${Date.now()}-${originalname}`;
+        fs.renameSync(filePath, attachmentPath);
       }
 
       const start_date = startDate.toISOString();
@@ -27,11 +40,15 @@ export class TimeOffService {
 
       const tambahCuti = await this.prisma.timeOff.create({
         data: {
-          id_employee: id_employee,
+          employee: {
+            connect: {
+              id_employee: id_employee,
+            },
+          },
           start_date: start_date,
           end_date: end_date,
           type: createTimeOffDto.type,
-          attachment: createTimeOffDto.attachment,
+          attachment: attachmentPath,
           status: 'pending',
           description: createTimeOffDto.description,
         },
@@ -53,31 +70,86 @@ export class TimeOffService {
       }
 
       console.log(createTimeOffDto.start_date);
-      // Log the error details for debugging
       console.error('Error creating time off request:', error);
 
-      // Return a more specific error message if possible
       throw new BadRequestException(
         'Gagal menambahkan pengajuan: ' + error.message,
       );
     }
   }
 
-  async findAll() {
-    const allTimeOff = await this.prisma.timeOff.findMany();
+  async findAll(params: {
+    page: number;
+    pageSize: number;
+    q?: string;
+    date?: string;
+    id_employee?: number;
+  }) {
+    const { page, pageSize, q, date, id_employee } = params;
+
+    const where: any = {};
+
+    if (q) {
+      where.employee = {
+        name: {
+          contains: q,
+          mode: 'insensitive',
+        },
+      };
+    }
+
+    if (date) {
+      const startDate = new Date(date);
+      const endDate = new Date(startDate);
+      endDate.setMonth(startDate.getMonth() + 1);
+
+      where.start_date = {
+        gte: startDate.toISOString(),
+        lt: endDate.toISOString(),
+      };
+    }
+
+    if (id_employee) {
+      where.id_employee = Number(id_employee);
+    }
+
+    const totalData = await this.prisma.timeOff.count({ where });
+    const timeOff = await this.prisma.timeOff.findMany({
+      where,
+      orderBy: {
+        start_date: 'desc',
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    const sortedtimeOff = timeOff.sort((a, b) => {
+      const statusOrder = {
+        rejected: 1,
+        pending: 2,
+        approved: 3,
+      };
+
+      return statusOrder[a.status] - statusOrder[b.status];
+    });
+
     const showTotalCuti = await Promise.all(
-      allTimeOff.map(async (timeOff) => {
+      sortedtimeOff.map(async (overtime) => {
         const employee = await this.prisma.employee.findUnique({
-          where: { id_employee: timeOff.id_employee },
+          where: { id_employee: overtime.id_employee },
           select: { cuti: true },
         });
         return {
           ...timeOff,
-          jumlah_cuti: employee.cuti,
+          jumlah_cuti: employee?.cuti,
         };
       }),
     );
-    return showTotalCuti;
+
+    return {
+      data: showTotalCuti,
+      totalData,
+    };
   }
 
   async findOne(getTimeOffbyId: Prisma.TimeOffWhereUniqueInput) {
@@ -94,6 +166,7 @@ export class TimeOffService {
   async update(
     where: Prisma.TimeOffWhereUniqueInput,
     updateTimeOffDto: UpdateTimeOffDto,
+    file: Express.Multer.File | undefined,
   ) {
     try {
       if (
@@ -105,16 +178,21 @@ export class TimeOffService {
         );
       }
 
+      let attachmentPath: string | null = null;
+      if (file && file.path) {
+        attachmentPath = path.basename(file.path);
+      }
+
       const updateTimeOff = await this.prisma.timeOff.update({
         where,
         data: {
           start_date: updateTimeOffDto.start_date
-            ? new Date(updateTimeOffDto.start_date)
+            ? new Date(updateTimeOffDto.start_date).toISOString()
             : undefined,
           end_date: updateTimeOffDto.end_date
-            ? new Date(updateTimeOffDto.end_date)
+            ? new Date(updateTimeOffDto.end_date).toISOString()
             : undefined,
-          attachment: updateTimeOffDto.attachment,
+          attachment: attachmentPath || undefined,
           type: updateTimeOffDto.type,
           status: 'pending',
           description: updateTimeOffDto.description,
