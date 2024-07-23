@@ -13,15 +13,31 @@ export class JabatanService {
   constructor(private prisma: PrismaService) {}
 
   async create(createJabatan: Prisma.JabatanCreateInput) {
+    // Periksa apakah jabatan sudah ada
+    const existingJabatan = await this.prisma.jabatan.findFirst({
+      where: { 
+        name_jabatan: {
+          equals: createJabatan.name_jabatan,
+          mode: 'insensitive'
+        }
+      },
+    });
+
+    if (existingJabatan) {
+      throw new BadRequestException('Jabatan sudah tersedia');
+    }
+
+    // Jika belum ada, tambahkan jabatan baru
     try {
       const tambahJabatan = await this.prisma.jabatan.create({
         data: { name_jabatan: createJabatan.name_jabatan },
       });
       return tambahJabatan;
     } catch (error) {
-      throw new BadRequestException('gagal menambah jabatan');
+      throw new BadRequestException('Gagal menambah jabatan');
     }
   }
+
 
   findAll() {
     return this.prisma.jabatan.findMany();
