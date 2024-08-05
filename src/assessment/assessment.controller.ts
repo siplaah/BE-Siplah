@@ -7,10 +7,12 @@ import {
   Delete,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
 import { AssessmentService } from './assessment.service';
 import { CreateAssessmentDto } from './dto/create-assessment.dto';
 import { UpdateAssessmentDto } from './dto/update-assessment.dto';
+import { Response } from 'express';
 
 @Controller('assessment')
 export class AssessmentController {
@@ -54,5 +56,10 @@ export class AssessmentController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.assessmentService.remove(+id);
+  }
+
+  @Get('export')
+  async exportToExcel(@Res() res: Response, @Param('id') id: number) {
+    return this.assessmentService.exportToExcel(res, id);
   }
 }

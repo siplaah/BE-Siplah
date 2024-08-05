@@ -5,6 +5,8 @@ import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UpdateOvertimeDto } from './dto/update-overtime.dto';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as ExcelJS from 'exceljs';
+import { Response } from 'express';
 
 @Injectable()
 export class OvertimeService {
@@ -117,6 +119,10 @@ export class OvertimeService {
 
   async findOne(getOvertimebyId: Prisma.OvertimesWhereUniqueInput) {
     console.log('findOne called with:', getOvertimebyId);
+
+    if (!getOvertimebyId || isNaN(getOvertimebyId.id_overtime)) {
+      throw new BadRequestException('Invalid ID');
+    }
 
     try {
       const getOvertime = await this.prisma.overtimes.findUnique({
@@ -253,6 +259,60 @@ export class OvertimeService {
     } catch (error) {
       console.error('Error during update:', error);
       throw error;
+    }
+  }
+
+  async exportToExcel(res: Response) {
+    try {
+      const data = await this.prisma.overtimes.findMany({
+        include: {
+          employee: true,
+        },
+      });
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Data Overtime');
+
+      worksheet.columns = [
+        { header: 'No', key: 'id_overtime', width: 10 },
+        { header: 'ID Karyawan', key: 'id_employee', width: 15 },
+        { header: 'Nama Karyawan', key: 'name_employee', width: 15 },
+        { header: 'Tanggal Mulai', key: 'start_date', width: 20 },
+        { header: 'Tanggal Selesai', key: 'end_date', width: 20 },
+        { header: 'Waktu Mulai', key: 'start_time', width: 15 },
+        { header: 'Waktu Selesai', key: 'end_time', width: 15 },
+        { header: 'Status', key: 'status', width: 15 },
+        { header: 'Description', key: 'description', width: 30 },
+      ];
+
+      data.forEach((item) => {
+        worksheet.addRow({
+          id_overtime: item.id_overtime,
+          id_employee: item.id_employee,
+          name_employee: item.employee.name,
+          start_date: item.start_date,
+          end_date: item.end_date,
+          start_time: item.start_time,
+          end_time: item.end_time,
+          status: item.status,
+          description: item.description,
+        });
+      });
+
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename=overtime-data.xlsx',
+      );
+
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      throw new Error('Failed to export data');
     }
   }
 }

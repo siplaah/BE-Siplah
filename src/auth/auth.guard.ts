@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
       // console.log('Payload:', payload); // Tambahkan ini
 
 
-      console.log('Payload:', payload); // Tambahkan ini
+      // console.log('Payload:', payload); // Tambahkan ini
 
 
 
