@@ -3,6 +3,8 @@ import { CreateAssessmentDto } from './dto/create-assessment.dto';
 import { UpdateAssessmentDto } from './dto/update-assessment.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma, typeAssessment } from '@prisma/client';
+import * as ExcelJS from 'exceljs';
+import { Response } from 'express';
 
 @Injectable()
 export class AssessmentService {
@@ -332,6 +334,63 @@ export class AssessmentService {
     } catch (error) {
       console.error('Error delete penilaian karyawan:', error);
       throw new BadRequestException('Gagal menghapus penilaian karyawan');
+    }
+  }
+
+  async exportToExcel(res: Response, id_employee: number) {
+    try {
+      const data = await this.prisma.assessmentEmployee.findMany({
+        where: { id_employee },
+        include: {
+          keyResult: true,
+          employee: true,
+        },
+      });
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Data Overtime');
+
+      worksheet.columns = [
+        { header: 'No', key: 'id_overtime', width: 10 },
+        { header: 'ID Karyawan', key: 'id_employee', width: 15 },
+        { header: 'Bulan', key: 'date', width: 15 },
+        { header: 'Key Result', key: 'id_key_result', width: 15 },
+        { header: 'Target', key: 'target', width: 15 },
+        { header: 'Tipe', key: 'type', width: 15 },
+        { header: 'Realisasi', key: 'realisasi', width: 15 },
+        { header: 'Nilai Akhir', key: 'nilai_akhir', width: 15 },
+        { header: 'Total Nilai', key: 'total_nilai', width: 15 },
+      ];
+
+      data.forEach((item) => {
+        worksheet.addRow({
+          id_assessment: item.id_assessment,
+          id_employee: item.id_employee,
+          name_employee: item.employee.name,
+          date: item.date,
+          id_key_result: item.id_key_result,
+          target: item.target,
+          type: item.type,
+          realisasi: item.realisasi,
+          nilai_akhir: item.nilai_akhir,
+          total_nilai: item.total_nilai,
+        });
+      });
+
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename=overtime-data.xlsx',
+      );
+
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      throw new Error('Failed to export data');
     }
   }
 }

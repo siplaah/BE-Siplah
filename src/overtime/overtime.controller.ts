@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  Res,
 } from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
@@ -21,6 +22,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
+import { Response } from 'express';
 
 @UseGuards(AuthGuard)
 @Controller('overtime')
@@ -29,6 +31,11 @@ export class OvertimeController {
     private readonly overtimeService: OvertimeService,
     private readonly authService: AuthService,
   ) {}
+
+  @Get('export')
+  async exportToExcel(@Res() res: Response) {
+    return this.overtimeService.exportToExcel(res);
+  }
 
   @Post()
   @UseInterceptors(
