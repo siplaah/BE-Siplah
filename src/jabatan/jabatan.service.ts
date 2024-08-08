@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+
 import {
   BadRequestException,
   Injectable,
@@ -38,9 +40,25 @@ export class JabatanService {
     }
   }
 
-
   findAll() {
     return this.prisma.jabatan.findMany();
+  }
+
+  async getJabatanWithSubjabatan(id_jabatan: number) {
+    return this.prisma.jabatan.findUnique({
+      where: { id_jabatan },
+      include: {
+        subJabatan: true, // Include subjabatan
+      },
+    });
+  }
+
+  async getAllJabatan() {
+    return this.prisma.jabatan.findMany({
+      include: {
+        subJabatan: true,
+      },
+    });
   }
 
   // manggil data dengan jabatan tertentu

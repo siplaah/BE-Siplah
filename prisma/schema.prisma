@@ -15,10 +15,13 @@ datasource db {
 
 model Jabatan {
   id_jabatan   Int        @id @default(autoincrement())
-  name_jabatan String
+  name_jabatan String?
   created_at   DateTime   @default(now())
   update_at    DateTime   @updatedAt
   Employee     Employee[]
+  parentId     Int? // Optional field for subjabatan
+  parent       Jabatan?   @relation("JabatanHierarchy", fields: [parentId], references: [id_jabatan])
+  subJabatan   Jabatan[]  @relation("JabatanHierarchy")
 }
 
 model Employee {
@@ -121,6 +124,7 @@ model DailyReport {
   task            String
   status          Progres
   link            String
+  feedback        String?
   created_at      DateTime  @default(now())
   update_at       DateTime  @updatedAt
   id_project      Int?
