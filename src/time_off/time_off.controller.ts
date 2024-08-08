@@ -12,6 +12,7 @@ import {
   UploadedFile,
   Query,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
 import { TimeOffService } from './time_off.service';
 import { CreateTimeOffDto } from './dto/create-time_off.dto';
@@ -21,6 +22,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
+import { Response } from 'express';
 
 @UseGuards(AuthGuard)
 @Controller('time-off')
@@ -29,6 +31,11 @@ export class TimeOffController {
     private readonly timeOffService: TimeOffService,
     private readonly authService: AuthService,
   ) {}
+
+  @Get('export')
+  async exportToExcel(@Res() res: Response) {
+    return this.timeOffService.exportToExcel(res);
+  }
 
   @Post()
   @UseInterceptors(

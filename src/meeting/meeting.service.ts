@@ -22,8 +22,8 @@ export class MeetingService {
 
       const { id_employee, ...meetingData } = createMeetingDto;
 
-      const meetingEmployees = id_employee.map((id_employee) => ({
-        employee: { connect: { id_employee } },
+      const meetingEmployees = id_employee.map((employeeId) => ({
+        employee: { connect: { id_employee: employeeId } },
       }));
 
       const createdMeeting = await this.prisma.meeting.create({

@@ -221,8 +221,6 @@ export class OvertimeService {
   }
 
   async reject(id_overtime: number, description: string) {
-    // const descriptionStr = String(description);
-
     try {
       const getOvertime = await this.prisma.overtimes.findUnique({
         where: {
@@ -262,19 +260,42 @@ export class OvertimeService {
     }
   }
 
-  async exportToExcel(res: Response) {
+  async exportToExcel(
+    res: Response,
+    status: string | undefined,
+    month: string | undefined,
+  ) {
     try {
+      const where: any = {};
+
+      if (status) {
+        where.status = status;
+      }
+
+      if (month) {
+        const startDate = new Date(month);
+        const endDate = new Date(startDate);
+        endDate.setMonth(startDate.getMonth() + 1);
+
+        where.start_date = {
+          gte: startDate.toISOString(),
+          lt: endDate.toISOString(),
+        };
+      }
+
       const data = await this.prisma.overtimes.findMany({
+        where,
         include: {
           employee: true,
         },
       });
 
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Data Overtime');
+      const worksheet = workbook.addWorksheet('Data Lembur');
 
       worksheet.columns = [
-        { header: 'No', key: 'id_overtime', width: 10 },
+        { header: 'No', width: 10 },
+        { header: 'ID Lembur', key: 'id_overtime', width: 10 },
         { header: 'ID Karyawan', key: 'id_employee', width: 15 },
         { header: 'Nama Karyawan', key: 'name_employee', width: 15 },
         { header: 'Tanggal Mulai', key: 'start_date', width: 20 },
@@ -282,7 +303,7 @@ export class OvertimeService {
         { header: 'Waktu Mulai', key: 'start_time', width: 15 },
         { header: 'Waktu Selesai', key: 'end_time', width: 15 },
         { header: 'Status', key: 'status', width: 15 },
-        { header: 'Description', key: 'description', width: 30 },
+        // { header: 'Description', key: 'description', width: 30 },
       ];
 
       data.forEach((item) => {
@@ -305,7 +326,9 @@ export class OvertimeService {
       );
       res.setHeader(
         'Content-Disposition',
-        'attachment; filename=overtime-data.xlsx',
+        `attachment; filename=lembur-data-${status || 'all'}-${
+          month || 'all'
+        }.xlsx`,
       );
 
       await workbook.xlsx.write(res);

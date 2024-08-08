@@ -23,18 +23,6 @@ export class AuthGuard implements CanActivate {
       if (!payload) {
         return false;
       }
-
-
-
-
-      // console.log('Payload:', payload); // Tambahkan ini
-
-
-      // console.log('Payload:', payload); // Tambahkan ini
-
-
-
-
       request['employee'] = payload.employee;
       return true;
     } catch (error) {

@@ -33,8 +33,12 @@ export class OvertimeController {
   ) {}
 
   @Get('export')
-  async exportToExcel(@Res() res: Response) {
-    return this.overtimeService.exportToExcel(res);
+  async exportToExcel(
+    @Query('status') status: string,
+    @Query('month') month: string,
+    @Res() res: Response,
+  ) {
+    return this.overtimeService.exportToExcel(res, status, month);
   }
 
   @Post()

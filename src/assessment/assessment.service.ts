@@ -15,20 +15,39 @@ export class AssessmentService {
     realisasi: number,
     target: number,
   ): number {
+    let nilai_akhir: number;
     switch (type) {
       case typeAssessment.should_increase_to:
-        return Math.round((realisasi / target) * 100);
+        nilai_akhir = Math.round((realisasi / target) * 100);
+        break;
       case typeAssessment.shoud_decrease_to:
-        return Math.round((target / realisasi) * 100);
+        nilai_akhir = Math.round((target / realisasi) * 100);
+        break;
       case typeAssessment.should_stay_above:
-        return realisasi > target ? 100 : 0;
+        nilai_akhir = realisasi > target ? 100 : 0;
+        break;
       case typeAssessment.shoud_stay_below:
-        return realisasi < target ? 100 : 0;
+        nilai_akhir = realisasi < target ? 100 : 0;
+        break;
       case typeAssessment.achieve_or_not:
-        return realisasi === 1 ? 100 : 0;
+        nilai_akhir = realisasi === 1 ? 100 : 0;
+        break;
       default:
         throw new BadRequestException('Invalid type');
     }
+    return Math.min(nilai_akhir, 100);
+  }
+
+  private calculateTotalNilai(assessmentData: any[]): {
+    total_nilai: number;
+    final_total_nilai: number;
+  } {
+    const total_nilai = Math.round(
+      assessmentData.reduce((total, item) => total + item.nilai_akhir, 0) /
+        assessmentData.length,
+    );
+    const final_total_nilai = Math.min(total_nilai, 100);
+    return { total_nilai, final_total_nilai };
   }
 
   async create(createAssessmentDto: CreateAssessmentDto) {
@@ -56,6 +75,14 @@ export class AssessmentService {
           if (!keyResult) {
             throw new BadRequestException('Key result tidak ditemukan');
           }
+
+          let realisasi = item.realisasi;
+          if (
+            item.type === typeAssessment.should_increase_to ||
+            item.type === typeAssessment.shoud_decrease_to
+          ) {
+            realisasi = Math.min(item.realisasi, keyResult.target);
+          }
           const nilai_akhir = this.NilaiAkhir(
             item.type,
             item.realisasi,
@@ -67,19 +94,16 @@ export class AssessmentService {
             id_key_result: item.id_key_result,
             type: item.type,
             target: keyResult.target,
-            realisasi: item.realisasi,
+            realisasi: realisasi,
             nilai_akhir: nilai_akhir,
             total_nilai: 0,
           };
         }),
       );
 
-      const total_nilai = Math.round(
-        assessmentData.reduce((total, item) => total + item.nilai_akhir, 0) /
-          assessmentData.length,
-      );
+      const { final_total_nilai } = this.calculateTotalNilai(assessmentData);
       assessmentData.forEach((data) => {
-        data.total_nilai = total_nilai;
+        data.total_nilai = final_total_nilai;
       });
 
       await this.prisma.assessmentEmployee.createMany({
@@ -90,7 +114,7 @@ export class AssessmentService {
         id_employee,
         date,
         assessment: assessmentData,
-        total_nilai: total_nilai,
+        total_nilai: final_total_nilai,
       };
     } catch (error) {
       console.error('Error create penilaian karyawan:', error);
@@ -127,18 +151,12 @@ export class AssessmentService {
       };
     }
 
-    console.log('Where clause:', where);
-
     const assessments = await this.prisma.assessmentEmployee.findMany({
       where,
       include: {
         employee: true,
       },
-      // skip: (page - 1) * pageSize,
-      // take: pageSize,
     });
-
-    // console.log('Assessments retrieved:', assessments);
 
     const transformedAssessments = assessments.map((assessment) => ({
       id_key_result: assessment.id_key_result,
@@ -156,8 +174,12 @@ export class AssessmentService {
 
     const groupedAssessments = transformedAssessments.reduce(
       (result, assessment) => {
-        if (!result[assessment.employee.id_employee]) {
-          result[assessment.employee.id_employee] = {
+        const month = `${assessment.employee.id_employee} - ${
+          new Date(assessment.date).getMonth() + 1
+        }-${new Date(assessment.date).getFullYear}`;
+
+        if (!result[month]) {
+          result[month] = {
             employee: {
               id_employee: assessment.employee.id_employee,
               nama: assessment.employee.nama,
@@ -167,29 +189,28 @@ export class AssessmentService {
             total_nilai: assessment.total_nilai,
           };
         }
-        result[assessment.employee.id_employee].assessment.push({
+        result[month].assessment.push({
           id_key_result: assessment.id_key_result,
           type: assessment.type,
           target: assessment.target,
           realisasi: assessment.realisasi,
           nilai_akhir: assessment.nilai_akhir,
         });
+
         return result;
       },
       {},
     );
 
-    const result = Object.values(groupedAssessments);
-
-    const groupedData = result.sort(
+    const result = Object.values(groupedAssessments).sort(
       (a: any, b: any) =>
         new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
 
-    const totalData = groupedData.length;
+    const totalData = result.length;
 
     return {
-      data: groupedData,
+      data: result,
       totalData,
     };
   }
@@ -216,10 +237,7 @@ export class AssessmentService {
       nilai_akhir: assessment.nilai_akhir,
     }));
 
-    const total_nilai = Math.round(
-      formattedAssessment.reduce((total, item) => total + item.nilai_akhir, 0) /
-        formattedAssessment.length,
-    );
+    const { final_total_nilai } = this.calculateTotalNilai(formattedAssessment);
 
     return {
       employee: {
@@ -227,13 +245,20 @@ export class AssessmentService {
         nama: employee.name,
       },
       assessment: formattedAssessment,
-      total_nilai: total_nilai,
+      total_nilai: final_total_nilai,
     };
   }
 
   async update(id_employee: number, updateAssessmentDto: UpdateAssessmentDto) {
     try {
       const { assessment, date } = updateAssessmentDto;
+
+      await this.prisma.assessmentEmployee.deleteMany({
+        where: {
+          id_employee: id_employee,
+          date: new Date(date).toISOString(), // Sesuaikan format tanggal jika perlu
+        },
+      });
 
       const assessmentData = await Promise.all(
         assessment.map(async (item) => {
@@ -245,76 +270,37 @@ export class AssessmentService {
           }
           const nilai_akhir = this.NilaiAkhir(
             item.type,
-            keyResult.target,
             item.realisasi,
+            keyResult.target,
           );
           return {
+            id_employee: id_employee,
             id_key_result: item.id_key_result,
             type: item.type,
             target: keyResult.target,
             realisasi: item.realisasi,
             nilai_akhir: nilai_akhir,
             date: new Date(date).toISOString(),
+            total_nilai: 0, // Set total_nilai, akan dihitung kemudian
           };
         }),
       );
 
-      const total_nilai = Math.round(
-        assessmentData.reduce((total, item) => total + item.nilai_akhir, 0) /
-          assessmentData.length,
-      );
+      const { total_nilai, final_total_nilai } =
+        this.calculateTotalNilai(assessmentData);
+      assessmentData.forEach((data) => {
+        data.total_nilai = total_nilai;
+      });
 
-      for (const data of assessmentData) {
-        const existingRecord = await this.prisma.assessmentEmployee.findFirst({
-          where: {
-            id_employee: id_employee,
-            id_key_result: data.id_key_result,
-          },
-        });
-
-        if (existingRecord) {
-          const updated = await this.prisma.assessmentEmployee.update({
-            where: {
-              id_assessment: existingRecord.id_assessment,
-            },
-            data: {
-              type: data.type,
-              target: data.target,
-              realisasi: data.realisasi,
-              nilai_akhir: data.nilai_akhir,
-              date: new Date(date).toISOString(),
-              total_nilai: total_nilai,
-            },
-          });
-          console.log(
-            `Updated assessment for employee ${id_employee}, key result ${data.id_key_result}:`,
-            updated,
-          );
-        } else {
-          const created = await this.prisma.assessmentEmployee.create({
-            data: {
-              id_employee: id_employee,
-              id_key_result: data.id_key_result,
-              type: data.type,
-              target: data.target,
-              realisasi: data.realisasi,
-              nilai_akhir: data.nilai_akhir,
-              date: new Date(date).toISOString(),
-              total_nilai: total_nilai,
-            },
-          });
-          console.log(
-            `Created assessment for employee ${id_employee}, key result ${data.id_key_result}:`,
-            created,
-          );
-        }
-      }
+      await this.prisma.assessmentEmployee.createMany({
+        data: assessmentData,
+      });
 
       return {
         id_employee: id_employee,
         date,
         assessment: assessmentData,
-        total_nilai: total_nilai,
+        total_nilai: final_total_nilai,
       };
     } catch (error) {
       console.error('Error updating employee assessments:', error);
@@ -337,44 +323,86 @@ export class AssessmentService {
     }
   }
 
-  async exportToExcel(res: Response, id_employee: number) {
+  async exportToExcel(res: Response) {
     try {
-      const data = await this.prisma.assessmentEmployee.findMany({
-        where: { id_employee },
+      const assessments = await this.prisma.assessmentEmployee.findMany({
         include: {
-          keyResult: true,
           employee: true,
+          keyResult: true,
         },
       });
 
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Data Overtime');
+      const worksheet = workbook.addWorksheet('Data Penilaian Karyawan');
 
       worksheet.columns = [
-        { header: 'No', key: 'id_overtime', width: 10 },
-        { header: 'ID Karyawan', key: 'id_employee', width: 15 },
-        { header: 'Bulan', key: 'date', width: 15 },
-        { header: 'Key Result', key: 'id_key_result', width: 15 },
-        { header: 'Target', key: 'target', width: 15 },
-        { header: 'Tipe', key: 'type', width: 15 },
-        { header: 'Realisasi', key: 'realisasi', width: 15 },
+        { header: 'Key Results', key: 'key_result', width: 40 },
+        { header: 'Karyawan', key: 'name', width: 20 },
+        { header: 'Type', key: 'type', width: 20 },
+        { header: 'Target', key: 'target', width: 10 },
+        { header: 'Realisasi', key: 'realisasi', width: 10 },
         { header: 'Nilai Akhir', key: 'nilai_akhir', width: 15 },
-        { header: 'Total Nilai', key: 'total_nilai', width: 15 },
       ];
 
-      data.forEach((item) => {
+      let currentEmployee = '';
+      let employeeTotalScore = 0;
+      let employeeScoreCount = 0;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      let startRow = 2;
+
+      assessments.forEach((item) => {
+        if (currentEmployee !== item.employee.name) {
+          if (currentEmployee !== '') {
+            worksheet.addRow({
+              key_result: 'Total Nilai',
+              nilai_akhir: employeeTotalScore / employeeScoreCount,
+            }).font = { bold: true };
+
+            worksheet.addRow({});
+          }
+
+          currentEmployee = item.employee.name;
+          employeeTotalScore = 0;
+          employeeScoreCount = 0;
+
+          startRow = worksheet.lastRow.number + 1;
+        }
+
         worksheet.addRow({
-          id_assessment: item.id_assessment,
-          id_employee: item.id_employee,
-          name_employee: item.employee.name,
-          date: item.date,
-          id_key_result: item.id_key_result,
-          target: item.target,
+          key_result: item.keyResult.key_result,
+          name: item.employee.name,
           type: item.type,
+          target: item.target,
           realisasi: item.realisasi,
           nilai_akhir: item.nilai_akhir,
-          total_nilai: item.total_nilai,
         });
+
+        employeeTotalScore += item.nilai_akhir;
+        employeeScoreCount += 1;
+      });
+
+      worksheet.addRow({
+        key_result: 'Total Nilai',
+        nilai_akhir: employeeTotalScore / employeeScoreCount,
+      }).font = { bold: true };
+
+      worksheet.eachRow((row, rowNumber) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          };
+        });
+
+        if (rowNumber % 2 === 0) {
+          row.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFEFEFEF' },
+          };
+        }
       });
 
       res.setHeader(
@@ -383,7 +411,7 @@ export class AssessmentService {
       );
       res.setHeader(
         'Content-Disposition',
-        'attachment; filename=overtime-data.xlsx',
+        'attachment; filename="assessment-data.xlsx"',
       );
 
       await workbook.xlsx.write(res);

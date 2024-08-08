@@ -5,6 +5,8 @@ import { PrismaService } from 'src/prisma.service';
 import { Prisma, Status } from '@prisma/client';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as ExcelJS from 'exceljs';
+import { Response } from 'express';
 
 @Injectable()
 export class TimeOffService {
@@ -367,6 +369,57 @@ export class TimeOffService {
     } catch (error) {
       console.error('Error fetching next 7 days off:', error);
       throw new BadRequestException('Gagal mengambil data cuti');
+    }
+  }
+
+  async exportToExcel(res: Response) {
+    try {
+      const data = await this.prisma.timeOff.findMany({
+        include: {
+          employee: true,
+        },
+      });
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Data Cuti');
+
+      worksheet.columns = [
+        { header: 'No', width: 10 },
+        { header: 'ID Cuti', key: 'id_time_off', width: 10 },
+        { header: 'ID Karyawan', key: 'id_employee', width: 15 },
+        { header: 'Nama Karyawan', key: 'name_employee', width: 15 },
+        { header: 'Tanggal Mulai', key: 'start_date', width: 20 },
+        { header: 'Tanggal Selesai', key: 'end_date', width: 20 },
+        { header: 'Tipe Cuti', key: 'type', width: 10 },
+        { header: 'Status', key: 'status', width: 15 },
+      ];
+
+      data.forEach((item) => {
+        worksheet.addRow({
+          id_time_off: item.id_time_off,
+          id_employee: item.id_employee,
+          name_employee: item.employee.name,
+          start_date: item.start_date,
+          end_date: item.end_date,
+          type: item.type,
+          status: item.status,
+        });
+      });
+
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=cuti-data}.xlsx`,
+      );
+
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      throw new Error('Failed to export data');
     }
   }
 }
