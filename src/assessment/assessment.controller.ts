@@ -18,6 +18,11 @@ import { Response } from 'express';
 export class AssessmentController {
   constructor(private readonly assessmentService: AssessmentService) {}
 
+  @Get('export')
+  async exportToExcel(@Res() res: Response) {
+    return this.assessmentService.exportToExcel(res);
+  }
+
   @Post()
   create(@Body() createAssessmentDto: CreateAssessmentDto) {
     return this.assessmentService.create(createAssessmentDto);
@@ -56,10 +61,5 @@ export class AssessmentController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.assessmentService.remove(+id);
-  }
-
-  @Get('export')
-  async exportToExcel(@Res() res: Response, @Param('id') id: number) {
-    return this.assessmentService.exportToExcel(res, id);
   }
 }
