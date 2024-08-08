@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+
 import { PrismaClient } from '@prisma/client';
 import { jabatanData } from './data/jabatan';
 import { employeeData } from './data/employee';
@@ -13,10 +15,18 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Seeding data for Jabatan model
+  // for (const jabatan of jabatanData) {
+  //   await prisma.jabatan.create({
+  //     data: jabatan,
+  //   });
+  // }
+
+  const jabatanMap: { [key: string]: number } = {};
   for (const jabatan of jabatanData) {
-    await prisma.jabatan.create({
+    const createdJabatan = await prisma.jabatan.create({
       data: jabatan,
     });
+    jabatanMap[jabatan.name_jabatan] = createdJabatan.id_jabatan;
   }
 
   // Seeding data for Employee model

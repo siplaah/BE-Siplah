@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { JenisKelamin, Keterangan, Pendidikan, StatusKaryawan } from "@prisma/client";
 
 export const employeeData = [

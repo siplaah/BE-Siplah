@@ -1,9 +1,9 @@
+/* eslint-disable prettier/prettier */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePresensiDto } from './dto/create-presensi.dto';
 import { UpdatePresensiDto } from './dto/update-presensi.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from '@prisma/client';
-import { Presensi } from './entities/presensi.entity';
 
 @Injectable()
 export class PresensiService {
@@ -23,7 +23,7 @@ export class PresensiService {
         data: {
           id_employee: id_employee,
 
-          start_time: createPresensiDto.start_time,
+          
           latitude: createPresensiDto.latitude,
           longitude: createPresensiDto.longitude,
 
