@@ -45,7 +45,7 @@ dependencies:
     specifier: ^2.30.1
     version: 2.30.1
   multer:
-    specifier: 1.4.5-lts.1
+    specifier: ^1.4.5-lts.1
     version: 1.4.5-lts.1
   nodemailer:
     specifier: ^6.9.14

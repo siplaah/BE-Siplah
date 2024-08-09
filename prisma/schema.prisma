@@ -166,8 +166,7 @@ model TimeOff {
 
 enum typeTimeOff {
   tahunan
-  menikah
-  melahirkan
+  khusus
 }
 
 model Meeting {
