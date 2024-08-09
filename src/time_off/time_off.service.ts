@@ -56,6 +56,11 @@ export class TimeOffService {
         },
       });
 
+      if (createTimeOffDto.type === 'tahunan') {
+        const total_hari = this.hitungTotalHari(start_date, end_date);
+        await this.jumlahCuti(id_employee, total_hari);
+      }
+
       const employee = await this.prisma.employee.findUnique({
         where: { id_employee },
         select: { cuti: true },
@@ -206,7 +211,9 @@ export class TimeOffService {
           updateTimeOff.start_date.toISOString(),
           updateTimeOff.end_date.toISOString(),
         );
-        await this.jumlahCuti(updateTimeOff.id_employee, total_hari);
+        if (updateTimeOffDto.type === 'tahunan') {
+          await this.jumlahCuti(updateTimeOff.id_employee, total_hari);
+        }
       }
 
       const employee = await this.prisma.employee.findUnique({
@@ -275,7 +282,9 @@ export class TimeOffService {
       approvedTimeOff.end_date.toISOString(),
     );
 
-    await this.jumlahCuti(approvedTimeOff.id_employee, total_hari);
+    if (approvedTimeOff.type === 'tahunan') {
+      await this.jumlahCuti(approvedTimeOff.id_employee, total_hari);
+    }
 
     const employee = await this.prisma.employee.findUnique({
       where: { id_employee: approvedTimeOff.id_employee },
