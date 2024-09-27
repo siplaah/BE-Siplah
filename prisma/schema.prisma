@@ -206,9 +206,8 @@ model AssessmentEmployee {
 }
 
 enum typeAssessment {
-  should_stay_above
-  shoud_stay_below
-  should_increase_to
-  shoud_decrease_to
-  achieve_or_not
+  status_achieved
+  status_good
+  status_need_improvement
+  status_inadequate
 }
